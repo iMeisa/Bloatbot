@@ -263,4 +263,4 @@ async def rank(ctx, username):
     await ctx.send(f'{username} is rank {player_global_rank}')
 
 
-client.run('NzA5NTUzMTM4OTc3MjEwMzgx.Xrnn-A.6xfel9uR2_Nwc7OqgKaG-X06GAw')
+client.run('NzA5NTUzMTM4OTc3MjEwMzgx.Xrq7Rw.PwfD4TsmbqdB3vwIcmwf5MBvreU')
