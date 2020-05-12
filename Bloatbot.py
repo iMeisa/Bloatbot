@@ -41,7 +41,7 @@ async def on_message(message):
     elif 'boatbot' in message.content or 'Boatbot' in message.content:
         await message.channel.send(':boat:')
     elif 'bot' in message.content or 'Bot' in message.content:
-        react = randint(1, 5)
+        react = randint(1, 10)
         if message.content.startswith('Bot') or message.content.startswith('bot'):
             react = 5
         if react == 5:
