@@ -38,8 +38,12 @@ async def on_message(message):
         write_praise.close()
     elif 'bad bot' in message.content or 'Bad bot' in message.content:
         await message.channel.send('D:')
-    elif 'bot' in message.content:
-        await message.channel.send(':eyes:')
+    elif 'bot' in message.content or 'Bot' in message.content:
+        react = randint(1, 5)
+        if message.content.startswith('Bot') or message.content.startswith('bot'):
+            react = 5
+        if react == 5:
+            await message.channel.send(':eyes:')
 
     if 'better' in message.content:
         await message.channel.send(':clap:')
@@ -47,6 +51,8 @@ async def on_message(message):
         await message.channel.send('Oof')
     if 'covid-19' in message.content or 'Covid-19' in message.content:
         await message.channel.send('No comment')
+    if 'boatbot' in message.content or 'Boatbot' in message.content:
+        await message.channel.send(':boat:')
 
     await client.process_commands(message)
 
