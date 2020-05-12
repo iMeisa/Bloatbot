@@ -38,7 +38,7 @@ async def on_message(message):
         write_praise.close()
     elif 'bad bot' in message.content or 'Bad bot' in message.content:
         await message.channel.send('D:')
-    if 'boatbot' in message.content or 'Boatbot' in message.content:
+    elif 'boatbot' in message.content or 'Boatbot' in message.content:
         await message.channel.send(':boat:')
     elif 'bot' in message.content or 'Bot' in message.content:
         react = randint(1, 5)
