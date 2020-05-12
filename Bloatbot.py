@@ -43,7 +43,7 @@ async def on_message(message):
 
     if 'better' in message.content:
         await message.channel.send(':clap:')
-    if 'Oof' in message.content and message.author.display_name != Bloatbot:
+    if 'Oof' in message.content and message.author.display_name != 'Bloatbot':
         await message.channel.send('Oof')
     if 'covid-19' in message.content or 'Covid-19' in message.content:
         await message.channel.send('No comment')
