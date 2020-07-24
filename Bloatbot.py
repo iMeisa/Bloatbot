@@ -55,7 +55,8 @@ async def on_message(message):
     await client.process_commands(message)
 
 
-def ask(ctx, *, question='blank'):
+@client.command()
+async def ask(ctx, *, question='blank'):
     responses = ['It is certain',
                  'It is decidedly so',
                  'Without a doubt',
@@ -131,8 +132,8 @@ async def loop(ctx, *, statement):
 
 @client.command()
 async def version(ctx):
-    read_version = open('version.txt', 'r').read()
-    await ctx.send(read_version)
+    with open('version.txt', 'r') as f:
+        await ctx.send(f.read())
 
 
 # @client.command()
