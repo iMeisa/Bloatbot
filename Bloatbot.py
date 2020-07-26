@@ -167,46 +167,120 @@ def call_api(url_param):
     return json.load(resp)
 
 
-def get_user_id(username):
+def get_user_data(username):
     query = urlencode({'k': api_key, 'u': username})
     user_url = 'get_user' + '?' + query
     user_data = call_api(user_url)
-    return user_data[0]['user_id']
+    return user_data[0]
 
 
-def get_beatmapset_id(beatmap_id):
+def get_beatmap_data(beatmap_id):
     query = urlencode({'k': api_key, 'b': beatmap_id})
     beatmap_url = 'get_beatmaps' + '?' + query
     beatmap_data = call_api(beatmap_url)
-    return beatmap_data[0]['beatmapset_id']
+    return beatmap_data[0]
+
+
+def get_mods(mod_id):
+    mod_id = int(mod_id)
+    if mod_id == 0:
+        return 'None'
+
+    mods = ['NF', 'EZ', 'Touch', 'HD', 'HR', 'SD', 'DT', 'RX', 'HT', 'NC', 'FL', 'AU', 'SO', 'AP', 'PF',
+            'K4', 'K5', 'K6', 'K7', 'K8', 'FI', 'RD', 'CN', 'TG', 'K9', 'KC', 'K1', 'K3', 'K2', 'V2', 'MR']
+    mod_list = []
+    for i in range((len(mods) - 1), 1, -1):
+        mod_value = 2 ** i
+        if mod_id >= mod_value:
+            mod_id -= mod_value
+            mod_list.append(mods[i])
+    mod_list.reverse()
+
+    used_mods = ''
+    for i in range(len(mod_list)):
+        if i == (len(mod_list) - 1):
+            used_mods += mod_list[i]
+        else:
+            used_mods += mod_list[i] + ', '
+
+    return used_mods
 
 
 @client.command()
 async def r(ctx, *, user=''):
     if len(user) < 1:
         user = ctx.author.display_name
-    user_pfp = 'https://a.ppy.sh/' + get_user_id(user)
+    user_data = get_user_data(user)
+    user_pfp = 'https://a.ppy.sh/' + user_data['user_id']
 
     query = urlencode({'k': api_key, 'u': user, 'type': 'string', 'limit': 1})
     recent_url = 'get_user_recent' + '?' + query
+
+    # User data
     user_recent = call_api(recent_url)
-    beatmap = user_recent[0]
-    beatmap_cover = 'https://assets.ppy.sh/beatmaps/' + get_beatmapset_id(beatmap['beatmap_id']) + '/covers/cover.jpg'
+    user_url = 'https://osu.ppy.sh/u/' + user
+    user_pp = float(user_data['pp_raw'])
+    user_global = int(user_data['pp_rank'])
+    user_country = user_data['country']
+    user_country_pp = int(user_data['pp_country_rank'])
+    user_title = f'{user}: {user_pp:,}pp (#{user_global:,} {user_country}{user_country_pp})'
 
-    embed = discord.Embed(
-        title='Title',
-        description='Desc',
-        color=discord.Color.red()
-    )
+    if len(user_recent) < 1:
+        await ctx.send(f"{user} hasn't played anything in a while")
+    else:
+        beatmap = user_recent[0]
+        beatmap_data = get_beatmap_data(beatmap['beatmap_id'])
+        beatmap_cover = 'https://assets.ppy.sh/beatmaps/' + beatmap_data['beatmapset_id'] + '/covers/cover.jpg'
+        beatmap_title = f'{beatmap_data["artist"]} - {beatmap_data["title"]} [{beatmap_data["version"]}]'
+        beatmap_link = 'https://osu.ppy.sh/b/' + beatmap['beatmap_id']
+        beatmap_score = int(beatmap['score'])
 
-    embed.set_footer(text='This is a footer')
-    embed.set_image(url='https://images.app.goo.gl/6rSNbPUqK4tNEnvy9')
-    embed.set_thumbnail(url=beatmap_cover)
-    embed.set_author(name=user, icon_url=user_pfp)
-    embed.add_field(name='Field Name', value='Field Value', inline=False)
-    embed.add_field(name='Field Name', value='Field Value', inline=True)
+        # Determine acc
+        n0 = int(beatmap['countmiss'])
+        n50 = int(beatmap['count50'])
+        n100 = int(beatmap['count100'])
+        n300 = int(beatmap['count300'])
+        note_hit_count = (50 * n50) + (100 * n100) + (300 * n300)
+        note_total = 300 * (n0 + n50 + n100 + n300)
+        raw_acc = round((note_hit_count / note_total) * 10000)
+        beatmap_acc = str(raw_acc / 100)
+        score_title = f'{beatmap_score:,}  ({beatmap_acc[:5]}%)'
 
-    await ctx.send(embed=embed)
+        # Combo count and notes
+        score_combo = f'**{beatmap["maxcombo"]}x**/{beatmap_data["max_combo"]}X' \
+                      f'\n{{ {n300} / {n100} / {n50} / {n0} }}'
+
+        # Mods
+        enabled_mods = get_mods(beatmap['enabled_mods'])
+
+        # Create embed
+        embed = discord.Embed(
+            title=beatmap_title,
+            url=beatmap_link,
+            image=beatmap_cover
+        )
+
+        # Set embed color based on rank
+        if beatmap['rank'] in ['SH', 'SSH']:
+            embed.colour = discord.Color.light_grey()
+        elif beatmap['rank'] in ['S', 'SS']:
+            embed.colour = discord.Color.gold()
+        elif beatmap['rank'] == 'A':
+            embed.colour = discord.Color.dark_green()
+        elif beatmap['rank'] == 'B':
+            embed.colour = discord.Color.blue()
+        elif beatmap['rank'] == 'C':
+            embed.colour = discord.Color.purple()
+        elif beatmap['rank'] == 'D':
+            embed.colour = discord.Color.red()
+
+        embed.set_author(name=user_title, icon_url=user_pfp, url=user_url)
+        embed.add_field(name=score_title, value=score_combo, inline=True)
+        embed.add_field(name='Mods:', value=enabled_mods, inline=True)
+        embed.set_image(url=beatmap_cover)
+        # embed.set_footer(text='This is a footer')
+
+        await ctx.send(embed=embed)
 
 
 client.run('NzA5NTUzMTM4OTc3MjEwMzgx.Xrq7Rw.PwfD4TsmbqdB3vwIcmwf5MBvreU')
