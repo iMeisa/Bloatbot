@@ -209,7 +209,7 @@ def get_mods(mod_id):
 
 def get_time_diff(time_origin):
     fmt = '%Y-%m-%d %H:%M:%S'
-    time_now = datetime.now().strftime(fmt)
+    time_now = datetime.utcnow().strftime(fmt)
     time_diff = datetime.strptime(time_now, fmt) - datetime.strptime(time_origin, fmt)
 
     if time_diff.seconds >= 3600:
