@@ -259,6 +259,7 @@ async def r(ctx, *, user=''):
         beatmap_title = f'{beatmap_data["artist"]} - {beatmap_data["title"]} [{beatmap_data["version"]}]'
         beatmap_link = 'https://osu.ppy.sh/b/' + beatmap['beatmap_id']
         beatmap_score = int(beatmap['score'])
+        beatmap_diff = beatmap_data['difficultyrating'][:4]
 
         # Determine acc
         n0 = int(beatmap['countmiss'])
@@ -285,6 +286,7 @@ async def r(ctx, *, user=''):
         embed = discord.Embed(
             title=beatmap_title,
             url=beatmap_link,
+            description=f'**{beatmap_diff}**:star:',
             image=beatmap_cover
         )
 
