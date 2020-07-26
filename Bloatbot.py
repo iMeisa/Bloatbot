@@ -6,6 +6,7 @@ from urllib.parse import urlencode
 import json
 import pickle
 from ratelimit import limits, sleep_and_retry
+from datetime import datetime
 
 client = commands.Bot(command_prefix='*')
 
@@ -206,6 +207,30 @@ def get_mods(mod_id):
     return used_mods
 
 
+def get_time_diff(time_origin):
+    fmt = '%Y-%m-%d %H:%M:%S'
+    time_now = datetime.now().strftime(fmt)
+    time_diff = datetime.strptime(time_now, fmt) - datetime.strptime(time_origin, fmt)
+
+    if time_diff.seconds >= 3600:
+        hours = time_diff.seconds // 3600
+        if hours > 1:
+            return f'{hours} hours ago'
+        else:
+            return '1 hour ago'
+    elif time_diff.seconds >= 60:
+        minutes = time_diff.seconds // 60
+        if minutes > 1:
+            return f'{minutes} minutes ago'
+        else:
+            return '1 minute ago'
+    else:
+        if time_diff.seconds > 1:
+            return f'{time_diff.seconds} seconds ago'
+        else:
+            return '1 second ago'
+
+
 @client.command()
 async def r(ctx, *, user=''):
     if len(user) < 1:
@@ -253,6 +278,9 @@ async def r(ctx, *, user=''):
         # Mods
         enabled_mods = get_mods(beatmap['enabled_mods'])
 
+        # Footer time diff
+        time_diff = get_time_diff(beatmap['date'])
+
         # Create embed
         embed = discord.Embed(
             title=beatmap_title,
@@ -278,7 +306,7 @@ async def r(ctx, *, user=''):
         embed.add_field(name=score_title, value=score_combo, inline=True)
         embed.add_field(name='Mods:', value=enabled_mods, inline=True)
         embed.set_image(url=beatmap_cover)
-        # embed.set_footer(text='This is a footer')
+        embed.set_footer(text=time_diff)
 
         await ctx.send(embed=embed)
 
