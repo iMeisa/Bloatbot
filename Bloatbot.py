@@ -261,6 +261,17 @@ async def r(ctx, *, user=''):
         beatmap_score = int(beatmap['score'])
         beatmap_diff = beatmap_data['difficultyrating'][:4]
 
+        # Determine rank status
+        beatmap_rank_status = beatmap_data['approved']
+        if beatmap_rank_status == '4':
+            rank_status = ':heart:'
+        elif beatmap_rank_status in ['3', '2']:
+            rank_status = ':white_check_mark:'
+        elif beatmap_rank_status == '1':
+            rank_status = ':arrow_double_up:'
+        else:
+            rank_status = ':clock3:'
+
         # Determine acc
         n0 = int(beatmap['countmiss'])
         n50 = int(beatmap['count50'])
@@ -284,7 +295,7 @@ async def r(ctx, *, user=''):
 
         # Create embed
         embed = discord.Embed(
-            title=beatmap_title,
+            title=rank_status+' '+beatmap_title,
             url=beatmap_link,
             description=f'**{beatmap_diff}**:star:',
             image=beatmap_cover
