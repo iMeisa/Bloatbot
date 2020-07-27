@@ -297,7 +297,7 @@ async def r(ctx, *, user=''):
         embed = discord.Embed(
             title=rank_status+' '+beatmap_title,
             url=beatmap_link,
-            description=f'**{beatmap_diff}**:star:',
+            description=f'**{beatmap_diff}** :star:',
             image=beatmap_cover
         )
 
