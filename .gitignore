@@ -4,3 +4,4 @@ credentials.json
 levels.json
 user_ids.json
 osuAPI.pickle
+token.txt

@@ -8,6 +8,8 @@ import pickle
 from ratelimit import limits, sleep_and_retry
 from datetime import datetime
 
+with open('token.txt', 'r') as fl:
+    TOKEN = fl.read()
 client = commands.Bot(command_prefix='*')
 
 
@@ -131,11 +133,6 @@ async def roll(ctx, *, arg='string'):
 
 
 @client.command()
-async def dr(ctx, username='(username)'):
-    await ctx.send("This command isn't currently functional")
-
-
-@client.command()
 async def choose(ctx, *, arg='invalid'):
     choices = str.split(arg)
     choice1 = ''
@@ -156,8 +153,8 @@ async def choose(ctx, *, arg='invalid'):
         await ctx.send('Proper format: *choose (choice 1) or (choice 2)')
 
 # osu! API
-with open('osuAPI.pickle', 'rb') as f:
-    api_key = pickle.load(f)
+with open('osuAPI.pickle', 'rb') as fl:
+    api_key = pickle.load(fl)
 
 
 @sleep_and_retry
@@ -231,6 +228,15 @@ def get_time_diff(time_origin):
             return '1 second ago'
 
 
+def get_acc(n0, n50, n100, n300):
+    note_hit_count = (50 * n50) + (100 * n100) + (300 * n300)
+    note_total = 300 * (n0 + n50 + n100 + n300)
+    raw_acc = round((note_hit_count / note_total) * 10000)
+    beatmap_acc = str(raw_acc / 100)
+
+    return beatmap_acc[:5]
+
+
 @client.command()
 async def r(ctx, *, user=''):
     if len(user) < 1:
@@ -277,10 +283,7 @@ async def r(ctx, *, user=''):
         n50 = int(beatmap['count50'])
         n100 = int(beatmap['count100'])
         n300 = int(beatmap['count300'])
-        note_hit_count = (50 * n50) + (100 * n100) + (300 * n300)
-        note_total = 300 * (n0 + n50 + n100 + n300)
-        raw_acc = round((note_hit_count / note_total) * 10000)
-        beatmap_acc = str(raw_acc / 100)
+        beatmap_acc = get_acc(n0, n50, n100, n300)
         score_title = f'{beatmap_score:,}  ({beatmap_acc[:5]}%)'
 
         # Combo count and notes
@@ -324,4 +327,4 @@ async def r(ctx, *, user=''):
         await ctx.send(embed=embed)
 
 
-client.run('NzA5NTUzMTM4OTc3MjEwMzgx.Xrq7Rw.PwfD4TsmbqdB3vwIcmwf5MBvreU')
+client.run(TOKEN)
