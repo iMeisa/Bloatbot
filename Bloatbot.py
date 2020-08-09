@@ -238,7 +238,7 @@ def get_acc(n0, n50, n100, n300):
 
 
 def sec_to_min(seconds):
-    minutes = seconds // 60 * (seconds <= 60)
+    minutes = seconds // 60
     seconds = seconds - (minutes * 60)
     return f'{minutes}:{seconds}'
 
@@ -301,7 +301,6 @@ async def r(ctx, *, user=''):
                              f'OD: `{beatmap_od}` HP: `{beatmap_hp}`'
         beatmap_info = f'Length: `{beatmap_time}`\n' \
                        f'BPM: `{beatmap_bpm}` Combo: `{beatmap_max_combo}`'
-
 
         # Determine acc
         n0 = int(beatmap['countmiss'])
