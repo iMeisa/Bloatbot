@@ -282,99 +282,98 @@ async def r(ctx, *, user=''):
     user_title = f'{user}: {user_pp:,}pp (#{user_global:,} {user_country}{user_country_pp})'
 
     if len(user_recent) < 1:
-        await ctx.send(f"{user} hasn't played anything in a while")
+        await ctx.send(f"{user} hasn't clicked circles in a while")
+        raise FileNotFoundError
+
+    beatmap = user_recent[0]
+    beatmap_data = get_beatmap_data(beatmap['beatmap_id'])
+    beatmap_cover = 'https://assets.ppy.sh/beatmaps/' + beatmap_data['beatmapset_id'] + '/covers/cover.jpg'
+    beatmap_title = f'{beatmap_data["artist"]} - {beatmap_data["title"]} [{beatmap_data["version"]}]'
+    beatmap_link = 'https://osu.ppy.sh/b/' + beatmap['beatmap_id']
+    beatmap_score = int(beatmap['score'])
+    beatmap_sr = beatmap_data['difficultyrating'][:4]
+
+    # Determine rank status
+    beatmap_rank_status = beatmap_data['approved']
+    if beatmap_rank_status == '4':
+        rank_status = ':heart:'
+    elif beatmap_rank_status in ['3', '2']:
+        rank_status = ':white_check_mark:'
+    elif beatmap_rank_status == '1':
+        rank_status = ':arrow_double_up:'
     else:
-        beatmap = user_recent[0]
-        beatmap_data = get_beatmap_data(beatmap['beatmap_id'])
-        beatmap_cover = 'https://assets.ppy.sh/beatmaps/' + beatmap_data['beatmapset_id'] + '/covers/cover.jpg'
-        beatmap_title = f'{beatmap_data["artist"]} - {beatmap_data["title"]} [{beatmap_data["version"]}]'
-        beatmap_link = 'https://osu.ppy.sh/b/' + beatmap['beatmap_id']
-        beatmap_score = int(beatmap['score'])
-        beatmap_sr = beatmap_data['difficultyrating'][:4]
+        rank_status = ':clock3:'
 
-        # Determine rank status
-        beatmap_rank_status = beatmap_data['approved']
-        if beatmap_rank_status == '4':
-            rank_status = ':heart:'
-        elif beatmap_rank_status in ['3', '2']:
-            rank_status = ':white_check_mark:'
-        elif beatmap_rank_status == '1':
-            rank_status = ':arrow_double_up:'
-        else:
-            rank_status = ':clock3:'
+    # Beatmap details
+    beatmap_time = f'{sec_to_min(beatmap_data["total_length"])} ({sec_to_min(beatmap_data["hit_length"])})'
+    beatmap_bpm = beatmap_data['bpm']
+    beatmap_max_combo = beatmap_data['max_combo']
+    beatmap_cs = beatmap_data['diff_size']
+    beatmap_ar = beatmap_data['diff_approach']
+    beatmap_od = beatmap_data['diff_overall']
+    beatmap_hp = beatmap_data['diff_drain']
 
-        # Beatmap details
-        beatmap_time = f'{sec_to_min(beatmap_data["total_length"])} ({sec_to_min(beatmap_data["hit_length"])})'
-        beatmap_bpm = beatmap_data['bpm']
-        beatmap_max_combo = beatmap_data['max_combo']
-        beatmap_cs = beatmap_data['diff_size']
-        beatmap_ar = beatmap_data['diff_approach']
-        beatmap_od = beatmap_data['diff_overall']
-        beatmap_hp = beatmap_data['diff_drain']
+    beatmap_difficulty = f'CS: `{beatmap_cs}` AR: `{beatmap_ar}`\n' \
+                         f'OD: `{beatmap_od}` HP: `{beatmap_hp}`'
+    beatmap_info = f'Length: `{beatmap_time}`\n' \
+                   f'BPM: `{beatmap_bpm}` Combo: `{beatmap_max_combo}`'
 
-        beatmap_difficulty = f'CS: `{beatmap_cs}` AR: `{beatmap_ar}`\n' \
-                             f'OD: `{beatmap_od}` HP: `{beatmap_hp}`'
-        beatmap_info = f'Length: `{beatmap_time}`\n' \
-                       f'BPM: `{beatmap_bpm}` Combo: `{beatmap_max_combo}`'
+    # Determine acc
+    n0 = int(beatmap['countmiss'])
+    n50 = int(beatmap['count50'])
+    n100 = int(beatmap['count100'])
+    n300 = int(beatmap['count300'])
+    beatmap_acc = get_acc(n0, n50, n100, n300)
+    score_title = f'{beatmap_score:,}  ({beatmap_acc[:5]}%)'
 
-        # Determine acc
-        n0 = int(beatmap['countmiss'])
-        n50 = int(beatmap['count50'])
-        n100 = int(beatmap['count100'])
-        n300 = int(beatmap['count300'])
-        beatmap_acc = get_acc(n0, n50, n100, n300)
-        score_title = f'{beatmap_score:,}  ({beatmap_acc[:5]}%)'
+    # Combo count and notes
+    score_combo = f'**{beatmap["maxcombo"]}x**/{beatmap_data["max_combo"]}X' \
+                  f'\n{{ {n300} / {n100} / {n50} / {n0} }}'
 
-        # Combo count and notes
-        score_combo = f'**{beatmap["maxcombo"]}x**/{beatmap_data["max_combo"]}X' \
-                      f'\n{{ {n300} / {n100} / {n50} / {n0} }}'
+    # Mods
+    enabled_mods = get_mods(beatmap['enabled_mods'])
 
-        # Mods
-        enabled_mods = get_mods(beatmap['enabled_mods'])
+    # Footer time diff
+    time_diff = get_time_diff(beatmap['date'])
 
-        # Footer time diff
-        time_diff = get_time_diff(beatmap['date'])
+    # Create embed
+    embed = discord.Embed(
+        title=rank_status+' '+beatmap_title,
+        url=beatmap_link,
+        description=f'**{beatmap_sr}** :star:',
+        image=beatmap_cover
+    )
 
-        # Create embed
-        embed = discord.Embed(
-            title=rank_status+' '+beatmap_title,
-            url=beatmap_link,
-            description=f'**{beatmap_sr}** :star:',
-            image=beatmap_cover
-        )
+    # Set embed color based on rank
+    if beatmap_only:
+        embed.colour = discord.Color.teal()
+    elif beatmap['rank'] in ['SH', 'SSH']:
+        embed.colour = discord.Color.light_grey()
+    elif beatmap['rank'] in ['S', 'SS']:
+        embed.colour = discord.Color.gold()
+    elif beatmap['rank'] == 'A':
+        embed.colour = discord.Color.dark_green()
+    elif beatmap['rank'] == 'B':
+        embed.colour = discord.Color.blue()
+    elif beatmap['rank'] == 'C':
+        embed.colour = discord.Color.purple()
+    elif beatmap['rank'] == 'D':
+        embed.colour = discord.Color.red()
 
-        # Set embed color based on rank
-        if beatmap_only:
-            embed.colour = discord.Color.teal()
-        elif beatmap['rank'] in ['SH', 'SSH']:
-            embed.colour = discord.Color.light_grey()
-        elif beatmap['rank'] in ['S', 'SS']:
-            embed.colour = discord.Color.gold()
-        elif beatmap['rank'] == 'A':
-            embed.colour = discord.Color.dark_green()
-        elif beatmap['rank'] == 'B':
-            embed.colour = discord.Color.blue()
-        elif beatmap['rank'] == 'C':
-            embed.colour = discord.Color.purple()
-        elif beatmap['rank'] == 'D':
-            embed.colour = discord.Color.red()
+    embed.set_author(name=user_title, icon_url=user_pfp, url=user_url)
+    embed.set_image(url=beatmap_cover)
 
-        embed.set_author(name=user_title, icon_url=user_pfp, url=user_url)
-        embed.set_image(url=beatmap_cover)
+    if play_only or show_all:
+        embed.add_field(name=score_title, value=score_combo, inline=True)
+        embed.add_field(name='Mods:', value=enabled_mods, inline=True)
+        embed.set_footer(text=time_diff)
+    if beatmap_only or show_all:
+        if show_all:
+            embed.add_field(name='-' * 80, value=f'**{"-" * 80}**', inline=False)
+        embed.add_field(name='Beatmap Difficulty', value=beatmap_difficulty, inline=True)
+        embed.add_field(name='Beatmap Info', value=beatmap_info, inline=True)
 
-        if play_only or show_all:
-            embed.add_field(name=score_title, value=score_combo, inline=True)
-            embed.add_field(name='Mods:', value=enabled_mods, inline=True)
-            embed.set_footer(text=time_diff)
-        if beatmap_only or show_all:
-            if show_all:
-                embed.add_field(name='--------------------------------------------------------------------------------',
-                                value='**--------------------------------------------------------------------------------**',
-                                inline=False)
-            embed.add_field(name='Beatmap Difficulty', value=beatmap_difficulty, inline=True)
-            embed.add_field(name='Beatmap Info', value=beatmap_info, inline=True)
-
-        await ctx.send(embed=embed)
+    await ctx.send(embed=embed)
 
 
 client.run(TOKEN)
