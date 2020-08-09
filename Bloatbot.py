@@ -248,7 +248,6 @@ def sec_to_min(seconds):
 
 @client.command()
 async def r(ctx, *, user=''):
-    play_only = True
 
     beatmap_only = False
     show_all = False
@@ -261,8 +260,7 @@ async def r(ctx, *, user=''):
         beatmap_only = True
         user.replace('-b', '')
 
-    if beatmap_only or show_all:
-        play_only = False
+    play_only = (beatmap_only + show_all) < 1  # True or False
 
     if len(user) < 3:
         user = ctx.author.display_name
