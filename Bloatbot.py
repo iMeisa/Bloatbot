@@ -248,12 +248,21 @@ def sec_to_min(seconds):
 
 @client.command()
 async def r(ctx, *, user=''):
-    r_params = ['-b', '-a']
+    play_only = True
 
     beatmap_only = False
+    show_all = False
+    if '-a' in user:
+        if '-b' in user:
+            raise Exception('Used other params with -a')
+        show_all = True
+        user.replace('-a', '')
     if '-b' in user:
         beatmap_only = True
         user.replace('-b', '')
+
+    if beatmap_only or show_all:
+        play_only = False
 
     if len(user) < 3:
         user = ctx.author.display_name
@@ -353,13 +362,17 @@ async def r(ctx, *, user=''):
         embed.set_author(name=user_title, icon_url=user_pfp, url=user_url)
         embed.set_image(url=beatmap_cover)
 
-        if beatmap_only:
-            embed.add_field(name='Beatmap Difficulty', value=beatmap_difficulty, inline=True)
-            embed.add_field(name='Beatmap Info', value=beatmap_info, inline=False)
-        else:
+        if play_only or show_all:
             embed.add_field(name=score_title, value=score_combo, inline=True)
-            embed.add_field(name='Mods:', value=enabled_mods, inline=False)
+            embed.add_field(name='Mods:', value=enabled_mods, inline=True)
             embed.set_footer(text=time_diff)
+        if beatmap_only or show_all:
+            if show_all:
+                embed.add_field(name='--------------------------------------------------------------------------------',
+                                value='**--------------------------------------------------------------------------------**',
+                                inline=False)
+            embed.add_field(name='Beatmap Difficulty', value=beatmap_difficulty, inline=True)
+            embed.add_field(name='Beatmap Info', value=beatmap_info, inline=True)
 
         await ctx.send(embed=embed)
 
