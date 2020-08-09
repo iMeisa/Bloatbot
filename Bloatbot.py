@@ -238,21 +238,27 @@ def get_acc(n0, n50, n100, n300):
 
 
 def sec_to_min(seconds):
+    seconds = int(seconds)
     minutes = seconds // 60
     seconds = seconds - (minutes * 60)
+    if seconds < 10:
+        seconds = '0' + str(seconds)
     return f'{minutes}:{seconds}'
 
 
 @client.command()
 async def r(ctx, *, user=''):
-    if len(user) < 1:
-        user = ctx.author.display_name
-    user_data = get_user_data(user)
-    user_pfp = 'https://a.ppy.sh/' + user_data['user_id']
+    r_params = ['-b', '-a']
 
     beatmap_only = False
     if '-b' in user:
         beatmap_only = True
+        user.replace('-b', '')
+
+    if len(user) < 3:
+        user = ctx.author.display_name
+    user_data = get_user_data(user)
+    user_pfp = 'https://a.ppy.sh/' + user_data['user_id']
 
     query = urlencode({'k': api_key, 'u': user, 'type': 'string', 'limit': 1})
     recent_url = 'get_user_recent' + '?' + query
@@ -349,10 +355,10 @@ async def r(ctx, *, user=''):
 
         if beatmap_only:
             embed.add_field(name='Beatmap Difficulty', value=beatmap_difficulty, inline=True)
-            embed.add_field(name='Beatmap Info', value=beatmap_info, inline=True)
+            embed.add_field(name='Beatmap Info', value=beatmap_info, inline=False)
         else:
             embed.add_field(name=score_title, value=score_combo, inline=True)
-            embed.add_field(name='Mods:', value=enabled_mods, inline=True)
+            embed.add_field(name='Mods:', value=enabled_mods, inline=False)
             embed.set_footer(text=time_diff)
 
         await ctx.send(embed=embed)
