@@ -237,12 +237,22 @@ def get_acc(n0, n50, n100, n300):
     return beatmap_acc[:5]
 
 
+def sec_to_min(seconds):
+    minutes = seconds // 60 * (seconds <= 60)
+    seconds = seconds - (minutes * 60)
+    return f'{minutes}:{seconds}'
+
+
 @client.command()
 async def r(ctx, *, user=''):
     if len(user) < 1:
         user = ctx.author.display_name
     user_data = get_user_data(user)
     user_pfp = 'https://a.ppy.sh/' + user_data['user_id']
+
+    beatmap_only = False
+    if '-b' in user:
+        beatmap_only = True
 
     query = urlencode({'k': api_key, 'u': user, 'type': 'string', 'limit': 1})
     recent_url = 'get_user_recent' + '?' + query
@@ -265,7 +275,7 @@ async def r(ctx, *, user=''):
         beatmap_title = f'{beatmap_data["artist"]} - {beatmap_data["title"]} [{beatmap_data["version"]}]'
         beatmap_link = 'https://osu.ppy.sh/b/' + beatmap['beatmap_id']
         beatmap_score = int(beatmap['score'])
-        beatmap_diff = beatmap_data['difficultyrating'][:4]
+        beatmap_sr = beatmap_data['difficultyrating'][:4]
 
         # Determine rank status
         beatmap_rank_status = beatmap_data['approved']
@@ -277,6 +287,21 @@ async def r(ctx, *, user=''):
             rank_status = ':arrow_double_up:'
         else:
             rank_status = ':clock3:'
+
+        # Beatmap details
+        beatmap_time = f'{sec_to_min(beatmap_data["total_length"])} ({sec_to_min(beatmap_data["hit_length"])})'
+        beatmap_bpm = beatmap_data['bpm']
+        beatmap_max_combo = beatmap_data['max_combo']
+        beatmap_cs = beatmap_data['diff_size']
+        beatmap_ar = beatmap_data['diff_approach']
+        beatmap_od = beatmap_data['diff_overall']
+        beatmap_hp = beatmap_data['diff_drain']
+
+        beatmap_difficulty = f'CS: `{beatmap_cs}` AR: `{beatmap_ar}`\n' \
+                             f'OD: `{beatmap_od}` HP: `{beatmap_hp}`'
+        beatmap_info = f'Length: `{beatmap_time}`\n' \
+                       f'BPM: `{beatmap_bpm}` Combo: `{beatmap_max_combo}`'
+
 
         # Determine acc
         n0 = int(beatmap['countmiss'])
@@ -300,12 +325,14 @@ async def r(ctx, *, user=''):
         embed = discord.Embed(
             title=rank_status+' '+beatmap_title,
             url=beatmap_link,
-            description=f'**{beatmap_diff}** :star:',
+            description=f'**{beatmap_sr}** :star:',
             image=beatmap_cover
         )
 
         # Set embed color based on rank
-        if beatmap['rank'] in ['SH', 'SSH']:
+        if beatmap_only:
+            embed.colour = discord.Color.teal()
+        elif beatmap['rank'] in ['SH', 'SSH']:
             embed.colour = discord.Color.light_grey()
         elif beatmap['rank'] in ['S', 'SS']:
             embed.colour = discord.Color.gold()
@@ -319,10 +346,15 @@ async def r(ctx, *, user=''):
             embed.colour = discord.Color.red()
 
         embed.set_author(name=user_title, icon_url=user_pfp, url=user_url)
-        embed.add_field(name=score_title, value=score_combo, inline=True)
-        embed.add_field(name='Mods:', value=enabled_mods, inline=True)
         embed.set_image(url=beatmap_cover)
-        embed.set_footer(text=time_diff)
+
+        if beatmap_only:
+            embed.add_field(name='Beatmap Difficulty', value=beatmap_difficulty, inline=True)
+            embed.add_field(name='Beatmap Info', value=beatmap_info, inline=True)
+        else:
+            embed.add_field(name=score_title, value=score_combo, inline=True)
+            embed.add_field(name='Mods:', value=enabled_mods, inline=True)
+            embed.set_footer(text=time_diff)
 
         await ctx.send(embed=embed)
 
