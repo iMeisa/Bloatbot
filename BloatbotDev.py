@@ -51,6 +51,7 @@ async def mp(ctx, match_link):
     for game in match_games:
         game_scores = game['scores']
 
+        beatmap_id = game['beatmap_id']
         score1 = game_scores[0]
         score2 = game_scores[1]
         user_id1 = score1['user_id']
@@ -71,6 +72,8 @@ async def mp(ctx, match_link):
         else:
             player_scores[user_id2] += 1
 
+        match_scores.append([beatmap_id, user_id1, player1_score, user_id2, player2_score])
+
     player1_id = list(user_ids.keys())[0]
     player2_id = list(user_ids.keys())[1]
     if player_scores[player1_id] > player_scores[player2_id]:
@@ -86,6 +89,20 @@ async def mp(ctx, match_link):
         colour=discord.Colour.magenta(),
         description=final_score
     )
+
+    for score in match_scores:
+        beatmap_id = score[0]
+        player1_name = user_ids[score[1]]
+        player1_score = int(score[2])
+        player2_name = user_ids[score[3]]
+        player2_score = int(score[4])
+
+        if player1_score > player2_score:
+            value_score = f'**{player1_name} {player1_score:,}** | {player2_score:,} {player2_name}'
+        else:
+            value_score = f'{player1_name} {player1_score:,} | **{player2_score:,} {player2_name}**'
+
+        embed.add_field(name=beatmap_id, value=value_score, inline=False)
 
     thumbnail = 'https://cdn.discordapp.com/attachments/734824448137625731/734824581080285265/TheLogoFinal.png'
     embed.set_thumbnail(url=thumbnail)
