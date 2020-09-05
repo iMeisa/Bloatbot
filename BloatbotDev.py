@@ -34,6 +34,13 @@ def get_user_data(username):
     return user_data[0]
 
 
+def get_beatmap_data(beatmap_id):
+    query = urlencode({'k': api_key, 'b': beatmap_id})
+    beatmap_url = 'get_beatmaps' + '?' + query
+    beatmap_data = call_api(beatmap_url)
+    return beatmap_data[0]
+
+
 @client.command()
 async def mp(ctx, match_link):
     match_url_split = match_link.split('/')
@@ -44,6 +51,16 @@ async def mp(ctx, match_link):
 
     match_title = match_data['match']['name']
     match_games = match_data['games']
+
+    mappool = {}
+    with open('tttmappool.txt', 'r') as f:
+        mappool_raw = f.read().split('\n')
+        for beatmap in mappool_raw:
+            beatmap_pool_id = beatmap.split(' ')
+            print(beatmap_pool_id, len(beatmap_pool_id))
+            pool_id = beatmap_pool_id[1]
+            map_id = beatmap_pool_id[0]
+            mappool[map_id] = pool_id
 
     match_scores = []
     player_scores = {}
@@ -72,7 +89,10 @@ async def mp(ctx, match_link):
         else:
             player_scores[user_id2] += 1
 
-        match_scores.append([beatmap_id, user_id1, player1_score, user_id2, player2_score])
+        beatmap_data = get_beatmap_data(beatmap_id)
+        beatmap_title = f'{mappool[beatmap_id]}: {beatmap_data["artist"]} - {beatmap_data["title"]}'
+
+        match_scores.append([beatmap_title, user_id1, player1_score, user_id2, player2_score])
 
     player1_id = list(user_ids.keys())[0]
     player2_id = list(user_ids.keys())[1]
@@ -91,7 +111,7 @@ async def mp(ctx, match_link):
     )
 
     for score in match_scores:
-        beatmap_id = score[0]
+        beatmap_title = score[0]
         player1_name = user_ids[score[1]]
         player1_score = int(score[2])
         player2_name = user_ids[score[3]]
@@ -102,7 +122,7 @@ async def mp(ctx, match_link):
         else:
             value_score = f'{player1_name} {player1_score:,} | **{player2_score:,} {player2_name}**'
 
-        embed.add_field(name=beatmap_id, value=value_score, inline=False)
+        embed.add_field(name=beatmap_title, value=value_score, inline=False)
 
     thumbnail = 'https://cdn.discordapp.com/attachments/734824448137625731/734824581080285265/TheLogoFinal.png'
     embed.set_thumbnail(url=thumbnail)
