@@ -57,7 +57,6 @@ async def mp(ctx, match_link):
         mappool_raw = f.read().split('\n')
         for beatmap in mappool_raw:
             beatmap_pool_id = beatmap.split(' ')
-            print(beatmap_pool_id, len(beatmap_pool_id))
             pool_id = beatmap_pool_id[1]
             map_id = beatmap_pool_id[0]
             mappool[map_id] = pool_id
@@ -69,6 +68,9 @@ async def mp(ctx, match_link):
         game_scores = game['scores']
 
         beatmap_id = game['beatmap_id']
+        if beatmap_id not in mappool:
+            continue
+
         score1 = game_scores[0]
         score2 = game_scores[1]
         user_id1 = score1['user_id']
