@@ -25,7 +25,8 @@ async def on_message(message):
         await message.channel.send(':watermelon:')
 
     if message.content.lower() in ['hi', 'hello', 'o/']:
-        await message.channel.send('o/')
+        if message.author.display_name != 'Bloatbot':
+            await message.channel.send('o/')
     if 'bloatbot' in message.content.lower():
         if message.author.display_name != 'Bloatbot':
             await message.channel.send(':blowfish:')
@@ -65,6 +66,8 @@ async def on_message(message):
         await message.channel.send('1 2 1 2 1 2')
     if ' won' in message.content.lower():
         await message.channel.send(':first_place:')
+    if 'yay' in message.content.lower():
+        await message.channel.send('\\o/')
 
     await client.process_commands(message)
 
