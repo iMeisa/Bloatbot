@@ -20,15 +20,18 @@ async def on_ready():
 
 @client.event
 async def on_message(message):
+    watermelon = randint(1, 100) == 50
+    if watermelon:
+        await message.channel.send(':watermelon:')
 
-    if message.content.lower() in ['hi', 'hello']:
+    if message.content.lower() in ['hi', 'hello', 'o/']:
         await message.channel.send('o/')
-    elif 'bloatbot' in message.content.lower():
+    if 'bloatbot' in message.content.lower():
         if message.author.display_name != 'Bloatbot':
             await message.channel.send(':blowfish:')
-    elif 'good bot' in message.content.lower():
+    if 'good bot' in message.content.lower():
         await message.channel.send(':D')
-    elif 'bad bot' in message.content.lower():
+    if 'bad bot' in message.content.lower():
         await message.channel.send('D:')
 
     if message.content.lower() == 'bot':
@@ -41,10 +44,27 @@ async def on_message(message):
     if message.content.lower() == 'nice' or '69' in message.content:
         if message.author.display_name != 'Bloatbot':
             await message.channel.send('Nice')
-    if 'boatbot' in message.content.lower() or message.author.display_name == 'OsuBot':
+    if message.content == '!r':
+        await message.channel.send("You didn't use my *r command :(")
+    elif 'boatbot' in message.content.lower() or message.author.display_name == 'OsuBot':
         await message.channel.send(':sailboat:')
     if message.content.lower() == 'f' and message.author.display_name != 'Bloatbot':
         await message.channel.send('F')
+    if message.content.lower().endswith('pp') or 'pp ' in message.content.lower() or 'dt' in message.content.lower():
+        await message.channel.send('filthy farmer')
+    if ' tb ' in message.content.lower() or message.content.lower().startswith('tb hype'):
+        if message.author.display_name != 'Bloatbot':
+            await message.channel.send('TB HYPE')
+    if 'good song' in message.content.lower():
+        await message.channel.send(':notes:')
+    if 'good enough' in message.content.lower():
+        await message.channel.send(':thumbup:')
+    if 'streams' in message.content.lower():
+        await message.channel.send('zxzxzxzxzx')
+    if 'jumps' in message.content.lower():
+        await message.channel.send('1 2 1 2 1 2')
+    if ' won' in message.content.lower():
+        await message.channel.send(':first_place:')
 
     await client.process_commands(message)
 
