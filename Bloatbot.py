@@ -348,7 +348,7 @@ async def r(ctx, *, user=''):
     elif beatmap_rank_status == '-1':
         rank_status = ':tools:'
     else:
-        rank_status = ':pirate_flag'
+        rank_status = ':pirate_flag:'
 
     # Beatmap details
     beatmap_time = f'{sec_to_min(beatmap_data["total_length"])} ({sec_to_min(beatmap_data["hit_length"])})'
