@@ -343,8 +343,12 @@ async def r(ctx, *, user=''):
         rank_status = ':white_check_mark:'
     elif beatmap_rank_status == '1':
         rank_status = ':arrow_double_up:'
-    else:
+    elif beatmap_rank_status == '0':
         rank_status = ':clock3:'
+    elif beatmap_rank_status == '-1':
+        rank_status = ':tools:'
+    else:
+        rank_status = ':pirate_flag'
 
     # Beatmap details
     beatmap_time = f'{sec_to_min(beatmap_data["total_length"])} ({sec_to_min(beatmap_data["hit_length"])})'
