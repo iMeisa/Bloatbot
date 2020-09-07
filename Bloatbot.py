@@ -68,6 +68,17 @@ async def on_message(message):
         await message.channel.send(':first_place:')
     if 'yay' in message.content.lower():
         await message.channel.send('\\o/')
+    if message.content.lower().startswith('hm'):
+        if message.author.display_name != 'Bloatbot':
+            await message.channel.send('Hmmm')
+    if message.content.lower().endswith('beast'):
+        if message.author.display_name != 'Bloatbot':
+            await message.channel.send('BEAST')
+    if message.author.display_name == 'Aupsie' or message.content.lower() == 'oi':
+        if message.author.display_name != 'Bloatbot':
+            aupsie = randint(1, 1000) == 500
+            if aupsie:
+                await message.channel.send('oi')
 
     await client.process_commands(message)
 
