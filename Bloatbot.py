@@ -311,7 +311,6 @@ async def r(ctx, *, user_param=''):
         user = remove_param(user_param, '-b')
     else:
         user = ctx.author.display_name
-    print(user)
 
     play_only = (beatmap_only + show_all) < 1  # True or False
 
