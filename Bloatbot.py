@@ -64,10 +64,21 @@ async def on_message(message):
         await message.channel.send('zxzxzxzxzx')
     if 'jumps' in message.content.lower():
         await message.channel.send('1 2 1 2 1 2')
-    if ' won' in message.content.lower():
+    if ' won ' in message.content.lower() or message.content.lower().endswith(' won'):
         await message.channel.send(':first_place:')
     if 'yay' in message.content.lower():
         await message.channel.send('\\o/')
+    if message.content.lower().startswith('hm'):
+        if message.author.display_name != 'Bloatbot':
+            await message.channel.send('Hmmm')
+    if message.content.lower().endswith('beast'):
+        if message.author.display_name != 'Bloatbot':
+            await message.channel.send('BEAST')
+    if message.author.display_name == 'Aupsie' or message.content.lower() == 'oi':
+        if message.author.display_name != 'Bloatbot':
+            aupsie = randint(1, 1000) == 500
+            if aupsie:
+                await message.channel.send('oi')
 
     await client.process_commands(message)
 
@@ -290,24 +301,30 @@ def sec_to_min(seconds):
     return f'{minutes}:{seconds}'
 
 
+def remove_param(user_string, param):
+    if user_string.endswith(param):
+        return user_string[:-3]
+    return user_string[3:]
+
+
 @client.command()
-async def r(ctx, *, user=''):
+async def r(ctx, *, user_param=''):
 
     beatmap_only = False
     show_all = False
-    if '-a' in user:
-        if '-b' in user:
+    if '-a' in user_param:
+        if '-b' in user_param:
             raise Exception('Used other params with -a')
         show_all = True
-        user.replace('-a', '')
-    if '-b' in user:
+        user = remove_param(user_param, '-a')
+    elif '-b' in user_param:
         beatmap_only = True
-        user.replace('-b', '')
+        user = remove_param(user_param, '-b')
+    else:
+        user = ctx.author.display_name
 
     play_only = (beatmap_only + show_all) < 1  # True or False
 
-    if len(user) < 3:
-        user = ctx.author.display_name
     user_data = get_user_data(user)
     user_pfp = 'https://a.ppy.sh/' + user_data['user_id']
 
