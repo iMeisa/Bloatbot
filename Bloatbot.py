@@ -51,7 +51,7 @@ async def on_message(message):
         await message.channel.send(':sailboat:')
     if message.content.lower() == 'f' and message.author.display_name != 'Bloatbot':
         await message.channel.send('F')
-    if message.content.lower().endswith('pp') or 'pp ' in message.content.lower() or 'dt' in message.content.lower():
+    if message.content.lower().endswith('pp') or 'pp ' in message.content.lower():
         await message.channel.send('filthy farmer')
     if ' tb ' in message.content.lower() or message.content.lower().startswith('tb hype'):
         if message.author.display_name != 'Bloatbot':

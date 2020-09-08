@@ -21,7 +21,7 @@ async def on_ready():
 
 @client.command()
 async def poll(ctx, *, params):
-    poll_letters = 'abcdefghijklmnopqrstuvwxyz'
+    poll_letters = '🇦🇧🇨🇩'
     single_quotes = "'" in params
     if single_quotes:
         options = params.split("'")
@@ -38,10 +38,13 @@ async def poll(ctx, *, params):
     option_count = len(options)
 
     for i in range(option_count - 1):
-        question += f'\n:regional_indicator_{poll_letters[i]}: {options[i]}'
+        if i == len(poll_letters):
+            break
+        question += f'\n{poll_letters[i]} {options[i]}'
 
-    await ctx.send(question)
-    print(options)
+    msg = await ctx.send(question)
+    for i in range(option_count - 1):
+        await msg.add_reaction(poll_letters[i])
 
 
 client.run(TOKEN)
