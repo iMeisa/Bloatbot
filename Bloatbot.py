@@ -186,6 +186,35 @@ async def choose(ctx, *, arg='invalid'):
     else:
         await ctx.send('Proper format: *choose (choice 1) or (choice 2)')
 
+
+@client.command()
+async def poll(ctx, *, params):
+    poll_letters = '🇦🇧🇨🇩'
+    single_quotes = "'" in params
+    if single_quotes:
+        options = params.split("'")
+    else:
+        options = params.split('"')
+
+    for option in options:
+        if option == ' ':
+            options.remove(option)
+
+    options.pop(0)
+    question = options[0]
+    options.pop(0)
+    option_count = len(options)
+
+    for i in range(option_count - 1):
+        if i == len(poll_letters):
+            break
+        question += f'\n{poll_letters[i]} {options[i]}'
+
+    msg = await ctx.send(question)
+    for i in range(option_count - 1):
+        await msg.add_reaction(poll_letters[i])
+
+
 # osu! API
 with open('osuAPI.pickle', 'rb') as fl:
     api_key = pickle.load(fl)
