@@ -205,12 +205,19 @@ async def poll(ctx, *, params):
     options.pop(0)
     option_count = len(options)
 
+    poll_options = ''
     for i in range(option_count - 1):
         if i == len(poll_letters):
             break
-        question += f'\n{poll_letters[i]} {options[i]}'
+        poll_options += f'{poll_letters[i]} {options[i]}\n'
 
-    msg = await ctx.send(question)
+    embed = discord.Embed(
+        title=question,
+        description=poll_options,
+        color=discord.Color.blue()
+    )
+
+    msg = await ctx.send(embed=embed)
     for i in range(option_count - 1):
         await msg.add_reaction(poll_letters[i])
 

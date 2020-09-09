@@ -3,3 +3,4 @@ venv/
 osuAPI.pickle
 token.txt
 testtoken.txt
+recentbeatmaps.json
