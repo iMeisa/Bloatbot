@@ -11,9 +11,6 @@ with open('testtoken.txt', 'r') as fl:
     TOKEN = fl.read()
 client = commands.Bot(command_prefix='*')
 
-with open('osuAPI.pickle', 'rb') as fl:
-    api_key = pickle.load(fl)
-
 
 @client.event
 async def on_ready():
@@ -119,7 +116,7 @@ def get_time_diff(time_origin):
     else:
         if time_diff.days >= 365:
             years = time_diff.days // 365
-            if days > 1:
+            if time_diff.days > 1:
                 return f'{years} years ago'
             else:
                 return '1 year ago'
@@ -160,32 +157,21 @@ def remove_param(user_string, param):
     return user_string[3:]
 
 
-@client.command()
-async def r(ctx, *, user_param=''):
-
-    beatmap_only = False
-    show_all = False
-    if '-a' in user_param:
-        if '-b' in user_param:
-            raise Exception('Used other params with -a')
-        show_all = True
-        user = remove_param(user_param, '-a')
-    elif '-b' in user_param:
-        beatmap_only = True
-        user = remove_param(user_param, '-b')
-    else:
-        user = ctx.author.display_name
-
+def create_play_embed(user, beatmap_id=None, channel_id=None, beatmap_only=False, show_all=False):
     play_only = (beatmap_only + show_all) < 1  # True or False
 
     user_data = get_user_data(user)
     user_pfp = 'https://a.ppy.sh/' + user_data['user_id']
 
-    query = urlencode({'k': api_key, 'u': user, 'type': 'string', 'limit': 1})
-    recent_url = 'get_user_recent' + '?' + query
+    if beatmap_id is None:
+        query = urlencode({'k': api_key, 'u': user, 'type': 'string', 'limit': 1})
+        url = 'get_user_recent' + '?' + query
+    else:
+        query = urlencode({'k': api_key, 'b': beatmap_id, 'u': user, 'm': 0, 'type': 'string', 'limit': 1})
+        url = 'get_scores' + '?' + query
 
     # User data
-    user_recent = call_api(recent_url)
+    user_play_data = call_api(url)
     user_url = 'https://osu.ppy.sh/u/' + user
     user_pp = float(user_data['pp_raw'])
     user_global = int(user_data['pp_rank'])
@@ -193,25 +179,29 @@ async def r(ctx, *, user_param=''):
     user_country_pp = int(user_data['pp_country_rank'])
     user_title = f'{user}: {user_pp:,}pp (#{user_global:,} {user_country}{user_country_pp})'
 
-    if len(user_recent) < 1:
-        await ctx.send(f"{user} hasn't clicked circles in a while")
-        raise FileNotFoundError
+    if len(user_play_data) < 1:
+        if channel_id is not None:
+            return f"{user} hasn't clicked circles in a while"
+        return f"{user} hasn't passed this map yet"
 
-    beatmap = user_recent[0]
-    beatmap_data = get_beatmap_data(beatmap['beatmap_id'])
+    beatmap = user_play_data[0]
+    if beatmap_id is None:
+        beatmap_id = beatmap['beatmap_id']
+    beatmap_data = get_beatmap_data(beatmap_id)
     beatmap_cover = 'https://assets.ppy.sh/beatmaps/' + beatmap_data['beatmapset_id'] + '/covers/cover.jpg'
     beatmap_title = f'{beatmap_data["artist"]} - {beatmap_data["title"]} [{beatmap_data["version"]}]'
-    beatmap_link = 'https://osu.ppy.sh/b/' + beatmap['beatmap_id']
+    beatmap_link = 'https://osu.ppy.sh/b/' + beatmap_id
     beatmap_score = int(beatmap['score'])
     beatmap_sr = beatmap_data['difficultyrating'][:4]
 
-    # Add to recents
-    with open('recentbeatmaps.json', 'r') as f:
-        recent_beatmaps = json.load(f)
+    if channel_id is not None:
+        # Add to recents
+        with open('recentbeatmaps.json', 'r') as f:
+            recent_beatmaps = json.load(f)
 
-    recent_beatmaps[str(ctx.channel.id)] = beatmap['beatmap_id']
-    with open('recentbeatmaps.json', 'w') as f:
-        json.dump(recent_beatmaps, f)
+        recent_beatmaps[str(channel_id)] = beatmap['beatmap_id']
+        with open('recentbeatmaps.json', 'w') as f:
+            json.dump(recent_beatmaps, f)
 
     # Determine rank status
     beatmap_rank_status = beatmap_data['approved']
@@ -262,7 +252,7 @@ async def r(ctx, *, user_param=''):
 
     # Create embed
     embed = discord.Embed(
-        title=rank_status+' '+beatmap_title,
+        title=rank_status + ' ' + beatmap_title,
         url=beatmap_link,
         description=f'**{beatmap_sr}** :star:',
         image=beatmap_cover
@@ -297,7 +287,34 @@ async def r(ctx, *, user_param=''):
         embed.add_field(name='Beatmap Difficulty', value=beatmap_difficulty, inline=True)
         embed.add_field(name='Beatmap Info', value=beatmap_info, inline=True)
 
-    await ctx.send(embed=embed)
+    return embed
+
+
+@client.command()
+async def r(ctx, *, user_param=''):
+
+    beatmap_only = False
+    show_all = False
+    if '-a' in user_param:
+        if '-b' in user_param:
+            raise Exception('Used other params with -a')
+        show_all = True
+        user = remove_param(user_param, '-a')
+    elif '-b' in user_param:
+        beatmap_only = True
+        user = remove_param(user_param, '-b')
+    elif len(user_param) < 3:
+        user = ctx.author.display_name
+    else:
+        user = user_param
+    print(user)
+
+    embed = create_play_embed(user, channel_id=ctx.channel.id, beatmap_only=beatmap_only, show_all=show_all)
+
+    if isinstance(embed, str):
+        await ctx.send(embed)
+    else:
+        await ctx.send(embed=embed)
 
 
 @client.command()
@@ -314,110 +331,12 @@ async def c(ctx, *, user=''):
 
     beatmap_id = recent_beatmaps[channel_id]
 
-    user_data = get_user_data(user)
-    user_pfp = 'https://a.ppy.sh/' + user_data['user_id']
+    embed = create_play_embed(user, beatmap_id=beatmap_id)
 
-    query = urlencode({'k': api_key,'b': beatmap_id, 'u': user, 'm': 0, 'type': 'string', 'limit': 1})
-    best_url = 'get_scores' + '?' + query
-
-    # User data
-    user_best = call_api(best_url)
-    user_url = 'https://osu.ppy.sh/u/' + user
-    user_pp = float(user_data['pp_raw'])
-    user_global = int(user_data['pp_rank'])
-    user_country = user_data['country']
-    user_country_pp = int(user_data['pp_country_rank'])
-    user_title = f'{user}: {user_pp:,}pp (#{user_global:,} {user_country}{user_country_pp})'
-
-    if len(user_best) < 1:
-        await ctx.send(f"{user} hasn't passed this map")
-        raise FileNotFoundError
-
-    beatmap = user_best[0]
-    beatmap_data = get_beatmap_data(beatmap_id)
-    beatmap_cover = 'https://assets.ppy.sh/beatmaps/' + beatmap_data['beatmapset_id'] + '/covers/cover.jpg'
-    beatmap_title = f'{beatmap_data["artist"]} - {beatmap_data["title"]} [{beatmap_data["version"]}]'
-    beatmap_link = 'https://osu.ppy.sh/b/' + beatmap_id
-    beatmap_score = int(beatmap['score'])
-    beatmap_sr = beatmap_data['difficultyrating'][:4]
-
-    # Determine rank status
-    beatmap_rank_status = beatmap_data['approved']
-    if beatmap_rank_status == '4':
-        rank_status = ':heart:'
-    elif beatmap_rank_status in ['3', '2']:
-        rank_status = ':white_check_mark:'
-    elif beatmap_rank_status == '1':
-        rank_status = ':arrow_double_up:'
-    elif beatmap_rank_status == '0':
-        rank_status = ':clock3:'
-    elif beatmap_rank_status == '-1':
-        rank_status = ':tools:'
+    if isinstance(embed, str):
+        await ctx.send(embed)
     else:
-        rank_status = ':pirate_flag:'
-
-    # Beatmap details
-    beatmap_time = f'{sec_to_min(beatmap_data["total_length"])} ({sec_to_min(beatmap_data["hit_length"])})'
-    beatmap_bpm = beatmap_data['bpm']
-    beatmap_max_combo = beatmap_data['max_combo']
-    beatmap_cs = beatmap_data['diff_size']
-    beatmap_ar = beatmap_data['diff_approach']
-    beatmap_od = beatmap_data['diff_overall']
-    beatmap_hp = beatmap_data['diff_drain']
-
-    beatmap_difficulty = f'CS: `{beatmap_cs}` AR: `{beatmap_ar}`\n' \
-                         f'OD: `{beatmap_od}` HP: `{beatmap_hp}`'
-    beatmap_info = f'Length: `{beatmap_time}`\n' \
-                   f'BPM: `{beatmap_bpm}` Combo: `{beatmap_max_combo}`'
-
-    # Determine acc
-    n0 = int(beatmap['countmiss'])
-    n50 = int(beatmap['count50'])
-    n100 = int(beatmap['count100'])
-    n300 = int(beatmap['count300'])
-    beatmap_acc = get_acc(n0, n50, n100, n300)
-    score_title = f'{beatmap_score:,}  ({beatmap_acc[:5]}%)'
-
-    # Combo count and notes
-    score_combo = f'**{beatmap["maxcombo"]}x**/{beatmap_data["max_combo"]}X' \
-                  f'\n{{ {n300} / {n100} / {n50} / {n0} }}'
-
-    # Mods
-    enabled_mods = get_mods(beatmap['enabled_mods'])
-
-    # Footer time diff
-    time_diff = get_time_diff(beatmap['date'])
-
-    # Create embed
-    embed = discord.Embed(
-        title=rank_status+' '+beatmap_title,
-        url=beatmap_link,
-        description=f'**{beatmap_sr}** :star:',
-        image=beatmap_cover
-    )
-
-    # Set embed color based on rank
-    if beatmap['rank'] in ['SH', 'SSH']:
-        embed.colour = discord.Color.light_grey()
-    elif beatmap['rank'] in ['S', 'SS']:
-        embed.colour = discord.Color.gold()
-    elif beatmap['rank'] == 'A':
-        embed.colour = discord.Color.dark_green()
-    elif beatmap['rank'] == 'B':
-        embed.colour = discord.Color.blue()
-    elif beatmap['rank'] == 'C':
-        embed.colour = discord.Color.purple()
-    elif beatmap['rank'] == 'D':
-        embed.colour = discord.Color.red()
-
-    embed.set_author(name=user_title, icon_url=user_pfp, url=user_url)
-    embed.set_image(url=beatmap_cover)
-    embed.add_field(name=score_title, value=score_combo, inline=True)
-    embed.add_field(name='Mods:', value=enabled_mods, inline=True)
-    embed.set_footer(text=time_diff)
-
-    await ctx.send(embed=embed)
-
+        await ctx.send(embed=embed)
 
 
 client.run(TOKEN)

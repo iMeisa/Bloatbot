@@ -343,32 +343,21 @@ def remove_param(user_string, param):
     return user_string[3:]
 
 
-@client.command()
-async def r(ctx, *, user_param=''):
-
-    beatmap_only = False
-    show_all = False
-    if '-a' in user_param:
-        if '-b' in user_param:
-            raise Exception('Used other params with -a')
-        show_all = True
-        user = remove_param(user_param, '-a')
-    elif '-b' in user_param:
-        beatmap_only = True
-        user = remove_param(user_param, '-b')
-    else:
-        user = ctx.author.display_name
-
+def create_play_embed(user, beatmap_id=None, channel_id=None, beatmap_only=False, show_all=False):
     play_only = (beatmap_only + show_all) < 1  # True or False
 
     user_data = get_user_data(user)
     user_pfp = 'https://a.ppy.sh/' + user_data['user_id']
 
-    query = urlencode({'k': api_key, 'u': user, 'type': 'string', 'limit': 1})
-    recent_url = 'get_user_recent' + '?' + query
+    if beatmap_id is None:
+        query = urlencode({'k': api_key, 'u': user, 'type': 'string', 'limit': 1})
+        url = 'get_user_recent' + '?' + query
+    else:
+        query = urlencode({'k': api_key, 'b': beatmap_id, 'u': user, 'm': 0, 'type': 'string', 'limit': 1})
+        url = 'get_scores' + '?' + query
 
     # User data
-    user_recent = call_api(recent_url)
+    user_play_data = call_api(url)
     user_url = 'https://osu.ppy.sh/u/' + user
     user_pp = float(user_data['pp_raw'])
     user_global = int(user_data['pp_rank'])
@@ -376,17 +365,29 @@ async def r(ctx, *, user_param=''):
     user_country_pp = int(user_data['pp_country_rank'])
     user_title = f'{user}: {user_pp:,}pp (#{user_global:,} {user_country}{user_country_pp})'
 
-    if len(user_recent) < 1:
-        await ctx.send(f"{user} hasn't clicked circles in a while")
-        raise FileNotFoundError
+    if len(user_play_data) < 1:
+        if channel_id is not None:
+            return f"{user} hasn't clicked circles in a while"
+        return f"{user} hasn't passed this map yet"
 
-    beatmap = user_recent[0]
-    beatmap_data = get_beatmap_data(beatmap['beatmap_id'])
+    beatmap = user_play_data[0]
+    if beatmap_id is None:
+        beatmap_id = beatmap['beatmap_id']
+    beatmap_data = get_beatmap_data(beatmap_id)
     beatmap_cover = 'https://assets.ppy.sh/beatmaps/' + beatmap_data['beatmapset_id'] + '/covers/cover.jpg'
     beatmap_title = f'{beatmap_data["artist"]} - {beatmap_data["title"]} [{beatmap_data["version"]}]'
-    beatmap_link = 'https://osu.ppy.sh/b/' + beatmap['beatmap_id']
+    beatmap_link = 'https://osu.ppy.sh/b/' + beatmap_id
     beatmap_score = int(beatmap['score'])
     beatmap_sr = beatmap_data['difficultyrating'][:4]
+
+    if channel_id is not None:
+        # Add to recents
+        with open('recentbeatmaps.json', 'r') as f:
+            recent_beatmaps = json.load(f)
+
+        recent_beatmaps[str(channel_id)] = beatmap['beatmap_id']
+        with open('recentbeatmaps.json', 'w') as f:
+            json.dump(recent_beatmaps, f)
 
     # Determine rank status
     beatmap_rank_status = beatmap_data['approved']
@@ -437,7 +438,7 @@ async def r(ctx, *, user_param=''):
 
     # Create embed
     embed = discord.Embed(
-        title=rank_status+' '+beatmap_title,
+        title=rank_status + ' ' + beatmap_title,
         url=beatmap_link,
         description=f'**{beatmap_sr}** :star:',
         image=beatmap_cover
@@ -472,7 +473,55 @@ async def r(ctx, *, user_param=''):
         embed.add_field(name='Beatmap Difficulty', value=beatmap_difficulty, inline=True)
         embed.add_field(name='Beatmap Info', value=beatmap_info, inline=True)
 
-    await ctx.send(embed=embed)
+    return embed
+
+
+@client.command()
+async def r(ctx, *, user_param=''):
+
+    beatmap_only = False
+    show_all = False
+    if '-a' in user_param:
+        if '-b' in user_param:
+            raise Exception('Used other params with -a')
+        show_all = True
+        user = remove_param(user_param, '-a')
+    elif '-b' in user_param:
+        beatmap_only = True
+        user = remove_param(user_param, '-b')
+    elif len(user_param) < 3:
+        user = ctx.author.display_name
+    else:
+        user = user_param
+
+    embed = create_play_embed(user, channel_id=ctx.channel.id, beatmap_only=beatmap_only, show_all=show_all)
+
+    if isinstance(embed, str):
+        await ctx.send(embed)
+    else:
+        await ctx.send(embed=embed)
+
+
+@client.command()
+async def c(ctx, *, user=''):
+    if len(user) < 3:
+        user = ctx.author.display_name
+
+    with open('recentbeatmaps.json', 'r') as f:
+        recent_beatmaps = json.load(f)
+
+    channel_id = str(ctx.channel.id)
+    if channel_id not in recent_beatmaps:
+        raise ValueError
+
+    beatmap_id = recent_beatmaps[channel_id]
+
+    embed = create_play_embed(user, beatmap_id=beatmap_id)
+
+    if isinstance(embed, str):
+        await ctx.send(embed)
+    else:
+        await ctx.send(embed=embed)
 
 
 @client.command()
