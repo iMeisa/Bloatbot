@@ -49,8 +49,9 @@ async def on_message(message):
         await message.channel.send("You didn't use my *r command :(")
     elif 'boatbot' in message.content.lower() or message.author.display_name == 'OsuBot':
         await message.channel.send(':sailboat:')
-    if message.content.lower() == 'f' and message.author.display_name != 'Bloatbot':
-        await message.channel.send('F')
+    if message.content.lower() == 'f' or ' died' in message.content.lower():
+        if message.author.display_name != 'Bloatbot':
+            await message.channel.send('F')
     if message.content.lower().endswith('pp') or 'pp ' in message.content.lower():
         await message.channel.send('filthy farmer')
     if ' tb ' in message.content.lower() or message.content.lower().startswith('tb hype'):
