@@ -157,7 +157,7 @@ def remove_param(user_string, param):
     return user_string[3:]
 
 
-def create_play_embed(user, beatmap_id=None, channel_id=None, beatmap_only=False, show_all=False):
+def create_play_embed(user, beatmap_id=None, channel_id=None, beatmap_only=False, show_all=False, compare=False):
     play_only = (beatmap_only + show_all) < 1  # True or False
 
     user_data = get_user_data(user)
@@ -193,15 +193,6 @@ def create_play_embed(user, beatmap_id=None, channel_id=None, beatmap_only=False
     beatmap_link = 'https://osu.ppy.sh/b/' + beatmap_id
     beatmap_score = int(beatmap['score'])
     beatmap_sr = beatmap_data['difficultyrating'][:4]
-
-    if channel_id is not None:
-        # Add to recents
-        with open('recentbeatmaps.json', 'r') as f:
-            recent_beatmaps = json.load(f)
-
-        recent_beatmaps[str(channel_id)] = beatmap['beatmap_id']
-        with open('recentbeatmaps.json', 'w') as f:
-            json.dump(recent_beatmaps, f)
 
     # Determine rank status
     beatmap_rank_status = beatmap_data['approved']
@@ -249,6 +240,15 @@ def create_play_embed(user, beatmap_id=None, channel_id=None, beatmap_only=False
 
     # Footer time diff
     time_diff = get_time_diff(beatmap['date'])
+
+    # Add to recents
+    if channel_id is not None:
+        with open('recentbeatmaps.json', 'r') as f:
+            recent_beatmaps = json.load(f)
+
+        recent_beatmaps[str(channel_id)] = {'beatmap_id': beatmap['beatmap_id'], 'score': beatmap_score, 'accuracy': float(beatmap_acc[:5]), 'combo': beatmap['maxcombo']}
+        with open('recentbeatmaps.json', 'w') as f:
+            json.dump(recent_beatmaps, f)
 
     # Create embed
     embed = discord.Embed(
@@ -307,7 +307,6 @@ async def r(ctx, *, user_param=''):
         user = ctx.author.display_name
     else:
         user = user_param
-    print(user)
 
     embed = create_play_embed(user, channel_id=ctx.channel.id, beatmap_only=beatmap_only, show_all=show_all)
 
@@ -329,7 +328,7 @@ async def c(ctx, *, user=''):
     if channel_id not in recent_beatmaps:
         raise ValueError
 
-    beatmap_id = recent_beatmaps[channel_id]
+    beatmap_id = recent_beatmaps[channel_id]['beatmap_id']
 
     embed = create_play_embed(user, beatmap_id=beatmap_id)
 
