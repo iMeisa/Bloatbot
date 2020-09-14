@@ -20,7 +20,7 @@ async def on_ready():
 
 @client.event
 async def on_message(message):
-    watermelon = randint(1, 100) == 50 or ':watermelon:' in message.content
+    watermelon = randint(1, 100) == 50
     if watermelon:
         await message.channel.send(':watermelon:')
 
@@ -499,20 +499,23 @@ def create_play_embed(user, beatmap_id=None, channel_id=None, beatmap_only=False
 @client.command()
 async def r(ctx, *, user_param=''):
 
+    def check_given_user(username):
+        if len(username) < 3:
+            checked_username = ctx.author.display_name
+            return checked_username
+        return username
+    user = check_given_user(user_param)
+
     beatmap_only = False
     show_all = False
     if '-a' in user_param:
         if '-b' in user_param:
             raise Exception('Used other params with -a')
         show_all = True
-        user = remove_param(user_param, '-a')
+        user = check_given_user(remove_param(user_param, '-a'))
     elif '-b' in user_param:
         beatmap_only = True
-        user = remove_param(user_param, '-b')
-    elif len(user_param) < 3:
-        user = ctx.author.display_name
-    else:
-        user = user_param
+        user = check_given_user(remove_param(user_param, '-b'))
 
     embed = create_play_embed(user, channel_id=ctx.channel.id, beatmap_only=beatmap_only, show_all=show_all)
 
@@ -532,6 +535,7 @@ async def c(ctx, *, user=''):
 
     channel_id = str(ctx.channel.id)
     if channel_id not in recent_beatmaps:
+        await ctx.send("Can't find recent map")
         raise ValueError
 
     beatmap_id = recent_beatmaps[channel_id]
