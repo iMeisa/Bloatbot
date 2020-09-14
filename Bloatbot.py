@@ -20,7 +20,7 @@ async def on_ready():
 
 @client.event
 async def on_message(message):
-    watermelon = randint(1, 100) == 50
+    watermelon = randint(1, 100) == 50 or ':watermelon:' in message.content
     if watermelon:
         await message.channel.send(':watermelon:')
 
