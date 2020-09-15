@@ -152,6 +152,8 @@ async def poke(ctx):
 @client.command()
 async def roll(ctx, *, arg='string'):
     exists_arg = False
+
+    # Default to *roll 100
     if arg == 'string':
         maximum = 100
     elif not arg.isdigit():
@@ -159,6 +161,8 @@ async def roll(ctx, *, arg='string'):
         exists_arg = True
     else:
         maximum = int(arg)
+
+    # Roll with the value given (inclusive)
     max_range = int(maximum)
     number = randint(1, max_range + 1)
     if exists_arg:
@@ -169,6 +173,7 @@ async def roll(ctx, *, arg='string'):
 
 @client.command()
 async def choose(ctx, *, arg='invalid'):
+    # Due for refactor/rewrite
     choices = str.split(arg)
     choice1 = ''
     choice2 = ''
@@ -191,8 +196,10 @@ async def choose(ctx, *, arg='invalid'):
 @client.command()
 async def poll(ctx, *, params):
     poll_letters = '🇦🇧🇨🇩'
-    single_quotes = "'" in params
-    if single_quotes:
+
+    # Split based on quotes
+    double_quotes = '"' in params
+    if not double_quotes:
         options = params.split("'")
     else:
         options = params.split('"')
@@ -201,11 +208,13 @@ async def poll(ctx, *, params):
         if option == ' ':
             options.remove(option)
 
+    # Remove question from options
     options.pop(0)
     question = options[0]
     options.pop(0)
     option_count = len(options)
 
+    # Add up all options to a single string
     poll_options = ''
     for i in range(option_count - 1):
         if i == len(poll_letters):
@@ -278,6 +287,7 @@ def get_mods(mod_id, separate=True):
     return used_mods
 
 
+# Recalculation specific to TTT
 def mod_recalculate(score, mods):
     score = int(score)
 
@@ -369,6 +379,7 @@ def create_play_embed(user, beatmap_id=None, channel_id=None, beatmap_only=False
     user_data = get_user_data(user)
     user_pfp = 'https://a.ppy.sh/' + user_data['user_id']
 
+    # Create URL string
     if beatmap_id is None:
         query = urlencode({'k': api_key, 'u': user, 'type': 'string', 'limit': 1})
         url = 'get_user_recent' + '?' + query
@@ -385,11 +396,13 @@ def create_play_embed(user, beatmap_id=None, channel_id=None, beatmap_only=False
     user_country_pp = int(user_data['pp_country_rank'])
     user_title = f'{user}: {user_pp:,}pp (#{user_global:,} {user_country}{user_country_pp})'
 
+    # If received None
     if len(user_play_data) < 1:
         if channel_id is not None:
             return f"{user} hasn't clicked circles in a while"
         return f"{user} hasn't passed this map yet"
 
+    # Assign beatmap data variable constants
     beatmap = user_play_data[0]
     if beatmap_id is None:
         beatmap_id = beatmap['beatmap_id']
@@ -400,8 +413,8 @@ def create_play_embed(user, beatmap_id=None, channel_id=None, beatmap_only=False
     beatmap_score = int(beatmap['score'])
     beatmap_sr = beatmap_data['difficultyrating'][:4]
 
+    # Write data to file for *c
     if channel_id is not None:
-        # Add to recents
         with open('recentbeatmaps.json', 'r') as f:
             recent_beatmaps = json.load(f)
 
@@ -498,14 +511,16 @@ def create_play_embed(user, beatmap_id=None, channel_id=None, beatmap_only=False
 
 @client.command()
 async def r(ctx, *, user_param=''):
-
+    # Check if username is given
     def check_given_user(username):
         if len(username) < 3:
             checked_username = ctx.author.display_name
             return checked_username
         return username
+
     user = check_given_user(user_param)
 
+    # Extract paramaters
     beatmap_only = False
     show_all = False
     if '-a' in user_param:
@@ -533,6 +548,7 @@ async def c(ctx, *, user=''):
     with open('recentbeatmaps.json', 'r') as f:
         recent_beatmaps = json.load(f)
 
+    # Check if *r was used in the channel
     channel_id = str(ctx.channel.id)
     if channel_id not in recent_beatmaps:
         await ctx.send("Can't find recent map")
@@ -550,6 +566,7 @@ async def c(ctx, *, user=''):
 
 @client.command()
 async def ttt(ctx, *, params=''):
+    # Separate comments from params
     params = params.split()
     match_link = params[0]
     comments = ''
@@ -558,15 +575,20 @@ async def ttt(ctx, *, params=''):
         for word in comment_words:
             comments += word + ' '
 
+    # Extract match ID from link
     match_url_split = match_link.split('/')
     match_id = match_url_split[-1]
+
+    # Create URL
     query = urlencode({'k': api_key, 'mp': match_id})
     url_params = 'get_match?' + query
-    match_data = call_api(url_params)
 
+    # Get match data
+    match_data = call_api(url_params)
     match_title = match_data['match']['name']
     match_games = match_data['games']
 
+    # Get mappool from file
     mappool = {}
     with open('tttmappool.txt', 'r') as f:
         mappool_raw = f.read().split('\n')
@@ -576,17 +598,19 @@ async def ttt(ctx, *, params=''):
             map_id = beatmap_pool_id[0]
             mappool[map_id] = pool_id
 
+    # Analyze scores
     match_scores = []
     player_scores = {}
     user_ids = {}
     for game in match_games:
-        game_scores = game['scores']
 
+        game_scores = game['scores']
         beatmap_id = game['beatmap_id']
         if beatmap_id not in mappool:
             continue
         mappool_id = mappool[beatmap_id]
 
+        # Only used for 1v1
         score1 = game_scores[0]
         score2 = game_scores[1]
         user_id1 = score1['user_id']
@@ -594,6 +618,8 @@ async def ttt(ctx, *, params=''):
 
         player1_score = score1['score']
         player2_score = score2['score']
+
+        # Mod recalculation if necessary
         free_mod = 'FM' in mappool_id or 'TB' in mappool_id
         if free_mod:
             player1_mods = get_mods(score1['enabled_mods'], separate=False)
@@ -601,6 +627,7 @@ async def ttt(ctx, *, params=''):
             player1_score = mod_recalculate(player1_score, player1_mods)
             player2_score = mod_recalculate(player2_score, player2_mods)
 
+        # Cache usernames
         if user_id1 not in player_scores:
             player_scores[user_id1] = 0
             player_scores[user_id2] = 0
@@ -613,10 +640,12 @@ async def ttt(ctx, *, params=''):
             player_scores[user_id2] += 1
 
         beatmap_data = get_beatmap_data(beatmap_id)
-        beatmap_title = f'{mappool_id}: _{beatmap_data["artist"]} - {beatmap_data["title"]}_'
 
+        # Store round data
+        beatmap_title = f'{mappool_id}: _{beatmap_data["artist"]} - {beatmap_data["title"]}_'
         match_scores.append([beatmap_title, user_id1, player1_score, user_id2, player2_score])
 
+    # Highlight the higher final score in bold
     player1_id = list(user_ids.keys())[0]
     player2_id = list(user_ids.keys())[1]
     if player_scores[player1_id] > player_scores[player2_id]:
@@ -640,6 +669,7 @@ async def ttt(ctx, *, params=''):
         player2_name = user_ids[score[3]]
         player2_score = int(score[4])
 
+        # Highlight each highest score in bold
         if player1_score > player2_score:
             value_score = f'**{player1_name} {player1_score:,}** | {player2_score:,} {player2_name}'
         else:
@@ -647,6 +677,7 @@ async def ttt(ctx, *, params=''):
 
         embed.add_field(name=beatmap_title, value=value_score, inline=False)
 
+    # Thumbnail = "The" Logo
     thumbnail = 'https://cdn.discordapp.com/attachments/734824448137625731/734824581080285265/TheLogoFinal.png'
     embed.set_thumbnail(url=thumbnail)
     embed.set_footer(text=comments)
