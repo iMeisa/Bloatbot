@@ -381,9 +381,11 @@ def create_play_embed(user, beatmap_id=None, channel_id=None, beatmap_only=False
 
     # Create URL string
     if beatmap_id is None:
+        # *r
         query = urlencode({'k': api_key, 'u': user, 'type': 'string', 'limit': 1})
         url = 'get_user_recent' + '?' + query
     else:
+        # *c
         query = urlencode({'k': api_key, 'b': beatmap_id, 'u': user, 'm': 0, 'type': 'string', 'limit': 1})
         url = 'get_scores' + '?' + query
 
@@ -520,15 +522,13 @@ async def r(ctx, *, user_param=''):
 
     user = check_given_user(user_param)
 
-    # Extract paramaters
+    # Extract parameters
     beatmap_only = False
     show_all = False
-    if '-a' in user_param:
-        if '-b' in user_param:
-            raise Exception('Used other params with -a')
+    if user_param.startswith('-a '):
         show_all = True
         user = check_given_user(remove_param(user_param, '-a'))
-    elif '-b' in user_param:
+    elif user_param.startswith('-b '):
         beatmap_only = True
         user = check_given_user(remove_param(user_param, '-b'))
 
@@ -683,6 +683,16 @@ async def ttt(ctx, *, params=''):
     embed.set_footer(text=comments)
 
     await ctx.send(embed=embed)
+
+
+@client.command()
+async def osu(ctx, *, raw_user=None):
+    user = raw_user
+    if raw_user is None:
+        user = ctx.author.display_name
+
+    user_data = get_user_data(user)
+    await ctx.send(user_data['pp_rank'])
 
 
 client.run(TOKEN)
