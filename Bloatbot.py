@@ -406,11 +406,12 @@ def create_play_embed(user, beatmap_id=None, channel_id=None, beatmap_only=False
     # User data
     user_play_data = call_api(url)
     user_url = 'https://osu.ppy.sh/u/' + user
+    username = user_data['username']
     user_pp = float(user_data['pp_raw'])
     user_global = int(user_data['pp_rank'])
     user_country = user_data['country']
     user_country_pp = int(user_data['pp_country_rank'])
-    user_title = f'{user}: {user_pp:,}pp (#{user_global:,} {user_country}{user_country_pp})'
+    user_title = f'{username}: {user_pp:,}pp (#{user_global:,} {user_country}{user_country_pp})'
 
     # If received None
     if len(user_play_data) < 1:
@@ -706,7 +707,19 @@ async def osu(ctx, *, raw_user=None):
         user = ctx.author.display_name
 
     user_data = get_user_data(user)
-    await ctx.send(user_data['pp_rank'])
+    user_pfp = 'https://a.ppy.sh/' + user_data['user_id']
+    username = user_data['username']
+    user_url = 'https://osu.ppy.sh/u/' + user
+    global_rank = user_data['pp_rank']
+    embed_title = 'Global Rank: ' + global_rank
+
+    embed = discord.Embed(
+        title=embed_title
+    )
+
+    embed.set_author(name=username, icon_url=user_pfp, url=user_url)
+
+    await ctx.send(embed=embed)
 
 
 client.run(TOKEN)
