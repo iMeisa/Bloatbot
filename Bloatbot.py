@@ -252,8 +252,8 @@ def get_user_data(username):
     return user_data[0]
 
 
-def get_beatmap_data(beatmap_id):
-    query = urlencode({'k': api_key, 'b': beatmap_id})
+def get_beatmap_data(beatmap_id, mods):
+    query = urlencode({'k': api_key, 'b': beatmap_id, 'mods': mods})
     beatmap_url = 'get_beatmaps' + '?' + query
     beatmap_data = call_api(beatmap_url)
     return beatmap_data[0]
@@ -408,7 +408,7 @@ def create_play_embed(user, beatmap_id=None, channel_id=None, beatmap_only=False
     beatmap = user_play_data[0]
     if beatmap_id is None:
         beatmap_id = beatmap['beatmap_id']
-    beatmap_data = get_beatmap_data(beatmap_id)
+    beatmap_data = get_beatmap_data(beatmap_id, beatmap['enabled_mods'])
     beatmap_cover = 'https://assets.ppy.sh/beatmaps/' + beatmap_data['beatmapset_id'] + '/covers/cover.jpg'
     beatmap_title = f'{beatmap_data["artist"]} - {beatmap_data["title"]} [{beatmap_data["version"]}]'
     beatmap_link = 'https://osu.ppy.sh/b/' + beatmap_id
@@ -525,10 +525,10 @@ async def r(ctx, *, user_param=''):
     # Extract parameters
     beatmap_only = False
     show_all = False
-    if user_param.startswith('-a '):
+    if user_param.startswith('-a ') or user_param.endswith('-a'):
         show_all = True
         user = check_given_user(remove_param(user_param, '-a'))
-    elif user_param.startswith('-b '):
+    elif user_param.startswith('-b ') or user_param.endswith('-b'):
         beatmap_only = True
         user = check_given_user(remove_param(user_param, '-b'))
 
