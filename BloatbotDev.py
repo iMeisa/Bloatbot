@@ -37,8 +37,22 @@ def get_user_data(username):
     return user_data[0]
 
 
-def get_beatmap_data(beatmap_id):
-    query = urlencode({'k': api_key, 'b': beatmap_id})
+def get_beatmap_data(beatmap_id, mods_bytes=0):
+    current_mods = get_mods(mods_bytes, separate=False)
+    acceptable_mods = ['EZ', 'HR', 'DT', 'HT', 'NC']
+
+    change_sr = False
+    for mod in acceptable_mods:
+        if mod in current_mods:
+            change_sr = True
+            break
+
+    if change_sr:
+        mods = mods_bytes
+    else:
+        mods = 0
+
+    query = urlencode({'k': api_key, 'b': beatmap_id, 'mods': mods})
     beatmap_url = 'get_beatmaps' + '?' + query
     beatmap_data = call_api(beatmap_url)
     return beatmap_data[0]
@@ -72,6 +86,7 @@ def get_mods(mod_id, separate=True):
     return used_mods
 
 
+# Recalculation specific to TTT
 def mod_recalculate(score, mods):
     score = int(score)
 
@@ -157,42 +172,57 @@ def remove_param(user_string, param):
     return user_string[3:]
 
 
-def create_play_embed(user, beatmap_id=None, channel_id=None, beatmap_only=False, show_all=False, compare=False):
+def create_play_embed(user, beatmap_id=None, channel_id=None, beatmap_only=False, show_all=False):
     play_only = (beatmap_only + show_all) < 1  # True or False
 
     user_data = get_user_data(user)
     user_pfp = 'https://a.ppy.sh/' + user_data['user_id']
 
+    # Create URL string
     if beatmap_id is None:
+        # *r
         query = urlencode({'k': api_key, 'u': user, 'type': 'string', 'limit': 1})
         url = 'get_user_recent' + '?' + query
     else:
+        # *c
         query = urlencode({'k': api_key, 'b': beatmap_id, 'u': user, 'm': 0, 'type': 'string', 'limit': 1})
         url = 'get_scores' + '?' + query
 
     # User data
     user_play_data = call_api(url)
     user_url = 'https://osu.ppy.sh/u/' + user
+    username = user_data['username']
     user_pp = float(user_data['pp_raw'])
     user_global = int(user_data['pp_rank'])
     user_country = user_data['country']
     user_country_pp = int(user_data['pp_country_rank'])
-    user_title = f'{user}: {user_pp:,}pp (#{user_global:,} {user_country}{user_country_pp})'
+    user_title = f'{username}: {user_pp:,}pp (#{user_global:,} {user_country}{user_country_pp})'
 
+    # If received None
     if len(user_play_data) < 1:
         if channel_id is not None:
             return f"{user} hasn't clicked circles in a while"
         return f"{user} hasn't passed this map yet"
 
+    # Assign beatmap data variable constants
     beatmap = user_play_data[0]
     if beatmap_id is None:
         beatmap_id = beatmap['beatmap_id']
-    beatmap_data = get_beatmap_data(beatmap_id)
+    beatmap_data = get_beatmap_data(beatmap_id, beatmap['enabled_mods'])
     beatmap_cover = 'https://assets.ppy.sh/beatmaps/' + beatmap_data['beatmapset_id'] + '/covers/cover.jpg'
     beatmap_title = f'{beatmap_data["artist"]} - {beatmap_data["title"]} [{beatmap_data["version"]}]'
     beatmap_link = 'https://osu.ppy.sh/b/' + beatmap_id
     beatmap_score = int(beatmap['score'])
     beatmap_sr = beatmap_data['difficultyrating'][:4]
+
+    # Write data to file for *c
+    if channel_id is not None:
+        with open('recentbeatmaps.json', 'r') as f:
+            recent_beatmaps = json.load(f)
+
+        recent_beatmaps[str(channel_id)] = beatmap['beatmap_id']
+        with open('recentbeatmaps.json', 'w') as f:
+            json.dump(recent_beatmaps, f)
 
     # Determine rank status
     beatmap_rank_status = beatmap_data['approved']
@@ -241,15 +271,6 @@ def create_play_embed(user, beatmap_id=None, channel_id=None, beatmap_only=False
     # Footer time diff
     time_diff = get_time_diff(beatmap['date'])
 
-    # Add to recents
-    if channel_id is not None:
-        with open('recentbeatmaps.json', 'r') as f:
-            recent_beatmaps = json.load(f)
-
-        recent_beatmaps[str(channel_id)] = {'beatmap_id': beatmap['beatmap_id'], 'score': beatmap_score, 'accuracy': float(beatmap_acc[:5]), 'combo': beatmap['maxcombo']}
-        with open('recentbeatmaps.json', 'w') as f:
-            json.dump(recent_beatmaps, f)
-
     # Create embed
     embed = discord.Embed(
         title=rank_status + ' ' + beatmap_title,
@@ -292,21 +313,24 @@ def create_play_embed(user, beatmap_id=None, channel_id=None, beatmap_only=False
 
 @client.command()
 async def r(ctx, *, user_param=''):
+    # Check if username is given
+    def check_given_user(username):
+        if len(username) < 3:
+            checked_username = ctx.author.display_name
+            return checked_username
+        return username
 
+    user = check_given_user(user_param)
+
+    # Extract parameters
     beatmap_only = False
     show_all = False
-    if '-a' in user_param:
-        if '-b' in user_param:
-            raise Exception('Used other params with -a')
+    if user_param.startswith('-a ') or user_param.endswith('-a'):
         show_all = True
-        user = remove_param(user_param, '-a')
-    elif '-b' in user_param:
+        user = check_given_user(remove_param(user_param, '-a'))
+    elif user_param.startswith('-b ') or user_param.endswith('-b'):
         beatmap_only = True
-        user = remove_param(user_param, '-b')
-    elif len(user_param) < 3:
-        user = ctx.author.display_name
-    else:
-        user = user_param
+        user = check_given_user(remove_param(user_param, '-b'))
 
     embed = create_play_embed(user, channel_id=ctx.channel.id, beatmap_only=beatmap_only, show_all=show_all)
 
@@ -324,11 +348,13 @@ async def c(ctx, *, user=''):
     with open('recentbeatmaps.json', 'r') as f:
         recent_beatmaps = json.load(f)
 
+    # Check if *r was used in the channel
     channel_id = str(ctx.channel.id)
     if channel_id not in recent_beatmaps:
+        await ctx.send("Can't find recent map")
         raise ValueError
 
-    beatmap_id = recent_beatmaps[channel_id]['beatmap_id']
+    beatmap_id = recent_beatmaps[channel_id]
 
     embed = create_play_embed(user, beatmap_id=beatmap_id)
 
@@ -336,6 +362,149 @@ async def c(ctx, *, user=''):
         await ctx.send(embed)
     else:
         await ctx.send(embed=embed)
+
+
+@client.command()
+async def ttt(ctx, *, params=''):
+    # Separate comments from params
+    params = params.split()
+    match_link = params[0]
+    comments = ''
+    if len(params) > 1:
+        comment_words = params[1:]
+        for word in comment_words:
+            comments += word + ' '
+
+    # Extract match ID from link
+    match_url_split = match_link.split('/')
+    match_id = match_url_split[-1]
+
+    # Create URL
+    query = urlencode({'k': api_key, 'mp': match_id})
+    url_params = 'get_match?' + query
+
+    # Get match data
+    match_data = call_api(url_params)
+    match_title = match_data['match']['name']
+    match_games = match_data['games']
+
+    # Get mappool from file
+    mappool = {}
+    with open('tttmappool.txt', 'r') as f:
+        mappool_raw = f.read().split('\n')
+        for beatmap in mappool_raw:
+            beatmap_pool_id = beatmap.split(' ')
+            pool_id = beatmap_pool_id[1]
+            map_id = beatmap_pool_id[0]
+            mappool[map_id] = pool_id
+
+    # Analyze scores
+    match_scores = []
+    player_scores = {}
+    user_ids = {}
+    for game in match_games:
+
+        game_scores = game['scores']
+        beatmap_id = game['beatmap_id']
+        if beatmap_id not in mappool:
+            continue
+        mappool_id = mappool[beatmap_id]
+
+        # Only used for 1v1
+        score1 = game_scores[0]
+        score2 = game_scores[1]
+        user_id1 = score1['user_id']
+        user_id2 = score2['user_id']
+
+        player1_score = score1['score']
+        player2_score = score2['score']
+
+        # Mod recalculation if necessary
+        free_mod = 'FM' in mappool_id or 'TB' in mappool_id
+        if free_mod:
+            player1_mods = get_mods(score1['enabled_mods'], separate=False)
+            player2_mods = get_mods(score2['enabled_mods'], separate=False)
+            player1_score = mod_recalculate(player1_score, player1_mods)
+            player2_score = mod_recalculate(player2_score, player2_mods)
+
+        # Cache usernames
+        if user_id1 not in player_scores:
+            player_scores[user_id1] = 0
+            player_scores[user_id2] = 0
+            user_ids[user_id1] = get_user_data(user_id1)['username']
+            user_ids[user_id2] = get_user_data(user_id2)['username']
+
+        if player1_score > player2_score:
+            player_scores[user_id1] += 1
+        else:
+            player_scores[user_id2] += 1
+
+        beatmap_data = get_beatmap_data(beatmap_id)
+
+        # Store round data
+        beatmap_title = f'{mappool_id}: _{beatmap_data["artist"]} - {beatmap_data["title"]}_'
+        match_scores.append([beatmap_title, user_id1, player1_score, user_id2, player2_score])
+
+    # Highlight the higher final score in bold
+    player1_id = list(user_ids.keys())[0]
+    player2_id = list(user_ids.keys())[1]
+    if player_scores[player1_id] > player_scores[player2_id]:
+        final_score = f'**{user_ids[player1_id]} {player_scores[player1_id]}** | ' \
+                      f'{player_scores[player2_id]} {user_ids[player2_id]}'
+    else:
+        final_score = f'{user_ids[player1_id]} {player_scores[player1_id]} | ' \
+                      f'**{player_scores[player2_id]} {user_ids[player2_id]}**'
+
+    embed = discord.Embed(
+        title=match_title,
+        url=match_link,
+        colour=discord.Colour.magenta(),
+        description=final_score
+    )
+
+    for score in match_scores:
+        beatmap_title = score[0]
+        player1_name = user_ids[score[1]]
+        player1_score = int(score[2])
+        player2_name = user_ids[score[3]]
+        player2_score = int(score[4])
+
+        # Highlight each highest score in bold
+        if player1_score > player2_score:
+            value_score = f'**{player1_name} {player1_score:,}** | {player2_score:,} {player2_name}'
+        else:
+            value_score = f'{player1_name} {player1_score:,} | **{player2_score:,} {player2_name}**'
+
+        embed.add_field(name=beatmap_title, value=value_score, inline=False)
+
+    # Thumbnail = "The" Logo
+    thumbnail = 'https://cdn.discordapp.com/attachments/734824448137625731/734824581080285265/TheLogoFinal.png'
+    embed.set_thumbnail(url=thumbnail)
+    embed.set_footer(text=comments)
+
+    await ctx.send(embed=embed)
+
+
+@client.command()
+async def osu(ctx, *, raw_user=None):
+    user = raw_user
+    if raw_user is None:
+        user = ctx.author.display_name
+
+    user_data = get_user_data(user)
+    user_pfp = 'https://a.ppy.sh/' + user_data['user_id']
+    username = user_data['username']
+    user_url = 'https://osu.ppy.sh/u/' + user
+    global_rank = user_data['pp_rank']
+    embed_title = 'Global Rank: ' + global_rank
+
+    embed = discord.Embed(
+        title=embed_title
+    )
+
+    embed.set_author(name=username, icon_url=user_pfp, url=user_url)
+
+    await ctx.send(embed=embed)
 
 
 client.run(TOKEN)

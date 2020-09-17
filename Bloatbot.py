@@ -263,7 +263,7 @@ def get_beatmap_data(beatmap_id, mods_bytes=0):
             break
 
     if change_sr:
-        mods = current_mods
+        mods = mods_bytes
     else:
         mods = 0
 
