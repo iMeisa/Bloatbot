@@ -252,7 +252,21 @@ def get_user_data(username):
     return user_data[0]
 
 
-def get_beatmap_data(beatmap_id, mods=0):
+def get_beatmap_data(beatmap_id, mods_bytes=0):
+    current_mods = get_mods(mods_bytes, separate=False)
+    acceptable_mods = ['EZ', 'HR', 'DT', 'HT', 'NC']
+
+    change_sr = False
+    for mod in acceptable_mods:
+        if mod in current_mods:
+            change_sr = True
+            break
+
+    if change_sr:
+        mods = current_mods
+    else:
+        mods = 0
+
     query = urlencode({'k': api_key, 'b': beatmap_id, 'mods': mods})
     beatmap_url = 'get_beatmaps' + '?' + query
     beatmap_data = call_api(beatmap_url)
