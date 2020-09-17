@@ -252,7 +252,7 @@ def get_user_data(username):
     return user_data[0]
 
 
-def get_beatmap_data(beatmap_id, mods):
+def get_beatmap_data(beatmap_id, mods=0):
     query = urlencode({'k': api_key, 'b': beatmap_id, 'mods': mods})
     beatmap_url = 'get_beatmaps' + '?' + query
     beatmap_data = call_api(beatmap_url)
