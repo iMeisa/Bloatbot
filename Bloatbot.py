@@ -83,7 +83,7 @@ async def on_message(message):
                 await message.channel.send('oi')
 
     if '<:angryasfuk:756187172230397973>' in message.content or 'fuck' in message.content.lower():
-        if message.authoer.display_name != 'Bloatbot':
+        if message.author.display_name != 'Bloatbot':
             await message.channel.send('<:angryasfuk:756187172230397973>')
     angry = randint(1, 1000) == 500
     if angry and message.author.display_name != 'Bloatbot':
