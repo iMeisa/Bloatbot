@@ -469,15 +469,23 @@ def create_play_embed(user, beatmap_id=None, channel_id=None, beatmap_only=False
     # Mod difficulty recalculation
     if 'HR' in enabled_mods:
         beatmap_cs *= 1.3
+        round(beatmap_cs, 2)
+
         beatmap_ar *= 1.4
+        round(beatmap_ar, 2)
         if beatmap_ar > 10:
             beatmap_ar = 10
+
         beatmap_od *= 1.4
+        round(beatmap_od, 2)
         if beatmap_od > 10:
             beatmap_od = 10
+
         beatmap_hp *= 1.4
+        round(beatmap_hp, 2)
         if beatmap_hp > 10:
             beatmap_hp = 10
+
     elif 'EZ' in enabled_mods:
         beatmap_cs /= 2
         beatmap_ar /= 2
@@ -488,11 +496,26 @@ def create_play_embed(user, beatmap_id=None, channel_id=None, beatmap_only=False
         beatmap_ar = str(beatmap_sr) + '+'
         beatmap_od = str(beatmap_sr) + '+'
         beatmap_hp = str(beatmap_sr) + '+'
+
+        # BPM and Time recalculation
+        beatmap_bpm = float(beatmap_bpm) * 0.6666
+        round(beatmap_bpm)
+        time_total = sec_to_min(float(beatmap_data['total_length']) * 0.6666)
+        time_drain = sec_to_min(float(beatmap_data['hit_length']) * 0.6666)
+        beatmap_time = f'{time_total} ({time_drain})'
+
     elif 'HT' in enabled_mods:
         beatmap_cs = str(beatmap_sr) + '-'
         beatmap_ar = str(beatmap_sr) + '-'
         beatmap_od = str(beatmap_sr) + '-'
         beatmap_hp = str(beatmap_sr) + '-'
+
+        # BPM and Time recalculation
+        beatmap_bpm = float(beatmap_bpm) * 1.5
+        round(beatmap_bpm)
+        time_total = sec_to_min(float(beatmap_data['total_length']) * 1.5)
+        time_drain = sec_to_min(float(beatmap_data['hit_length']) * 1.5)
+        beatmap_time = f'{time_total} ({time_drain})'
 
     beatmap_difficulty = f'CS: `{beatmap_cs}` AR: `{beatmap_ar}`\n' \
                          f'OD: `{beatmap_od}` HP: `{beatmap_hp}`'
