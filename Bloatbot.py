@@ -270,18 +270,24 @@ def get_user_data(username):
     return user_data[0]
 
 
-def get_beatmap_data(beatmap_id, mods_bytes=0):
-    current_mods = get_mods(mods_bytes, separate=False)
-    acceptable_mods = ['EZ', 'HR', 'DT', 'HT', 'NC']
+def get_beatmap_data(beatmap_id, mod_bytes_raw=0):
+    current_mods = get_mods(mod_bytes_raw, separate=False)
+    acceptable_mods = {'EZ': 2, 'HR': 8, 'DT': 64, 'HT': 256, 'NC': 64}
 
     change_sr = False
+    used_mods = []
     for mod in acceptable_mods:
         if mod in current_mods:
             change_sr = True
+            used_mods.append(mod)
             break
 
+    mod_bytes = 0
+    for mod in used_mods:
+        mod_bytes += acceptable_mods[mod]
+
     if change_sr:
-        mods = mods_bytes
+        mods = mod_bytes
     else:
         mods = 0
 
@@ -390,8 +396,8 @@ def get_acc(n0, n50, n100, n300):
     return beatmap_acc[:5]
 
 
-def sec_to_min(seconds):
-    seconds = int(seconds)
+def sec_to_min(seconds_raw):
+    seconds = int(seconds_raw)
     minutes = seconds // 60
     seconds = seconds - (minutes * 60)
     if seconds < 10:
@@ -477,7 +483,7 @@ def create_play_embed(user, beatmap_id=None, channel_id=None, beatmap_only=False
 
     # Beatmap details
     beatmap_time = f'{sec_to_min(beatmap_data["total_length"])} ({sec_to_min(beatmap_data["hit_length"])})'
-    beatmap_bpm = beatmap_data['bpm']
+    beatmap_bpm = float(beatmap_data['bpm'])
     beatmap_max_combo = beatmap_data['max_combo']
     beatmap_cs = float(beatmap_data['diff_size'])
     beatmap_ar = float(beatmap_data['diff_approach'])
@@ -487,20 +493,20 @@ def create_play_embed(user, beatmap_id=None, channel_id=None, beatmap_only=False
     # Mod difficulty recalculation
     if 'HR' in enabled_mods:
         beatmap_cs *= 1.3
-        round(beatmap_cs, 2)
+        beatmap_cs = round(beatmap_cs, 2)
 
         beatmap_ar *= 1.4
-        round(beatmap_ar, 2)
+        beatmap_ar = round(beatmap_ar, 2)
         if beatmap_ar > 10:
             beatmap_ar = 10
 
         beatmap_od *= 1.4
-        round(beatmap_od, 2)
+        beatmap_od = round(beatmap_od, 2)
         if beatmap_od > 10:
             beatmap_od = 10
 
         beatmap_hp *= 1.4
-        round(beatmap_hp, 2)
+        beatmap_hp = round(beatmap_hp, 2)
         if beatmap_hp > 10:
             beatmap_hp = 10
 
@@ -510,26 +516,24 @@ def create_play_embed(user, beatmap_id=None, channel_id=None, beatmap_only=False
         beatmap_od /= 2
         beatmap_hp /= 2
     if 'DT' in enabled_mods:
-        beatmap_cs = str(beatmap_cs) + '+'
         beatmap_ar = str(beatmap_ar) + '+'
         beatmap_od = str(beatmap_od) + '+'
         beatmap_hp = str(beatmap_hp) + '+'
 
         # BPM and Time recalculation
-        beatmap_bpm = float(beatmap_bpm) * 1.5
+        beatmap_bpm = beatmap_bpm * 1.5
 
         time_total = sec_to_min(float(beatmap_data['total_length']) * 0.6666)
         time_drain = sec_to_min(float(beatmap_data['hit_length']) * 0.6666)
         beatmap_time = f'{time_total} ({time_drain})'
 
     elif 'HT' in enabled_mods:
-        beatmap_cs = str(beatmap_cs) + '-'
         beatmap_ar = str(beatmap_ar) + '-'
         beatmap_od = str(beatmap_od) + '-'
         beatmap_hp = str(beatmap_hp) + '-'
 
         # BPM and Time recalculation
-        beatmap_bpm = float(beatmap_bpm) * 0.6666
+        beatmap_bpm = beatmap_bpm * 0.6666
 
         time_total = sec_to_min(float(beatmap_data['total_length']) * 1.5)
         time_drain = sec_to_min(float(beatmap_data['hit_length']) * 1.5)
