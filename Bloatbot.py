@@ -516,8 +516,8 @@ def create_play_embed(user, beatmap_id=None, channel_id=None, beatmap_only=False
         beatmap_hp = str(beatmap_hp) + '+'
 
         # BPM and Time recalculation
-        beatmap_bpm = float(beatmap_bpm) * 0.6666
-        round(int(beatmap_bpm))
+        beatmap_bpm = float(beatmap_bpm) * 1.5
+
         time_total = sec_to_min(float(beatmap_data['total_length']) * 0.6666)
         time_drain = sec_to_min(float(beatmap_data['hit_length']) * 0.6666)
         beatmap_time = f'{time_total} ({time_drain})'
@@ -529,8 +529,8 @@ def create_play_embed(user, beatmap_id=None, channel_id=None, beatmap_only=False
         beatmap_hp = str(beatmap_hp) + '-'
 
         # BPM and Time recalculation
-        beatmap_bpm = float(beatmap_bpm) * 1.5
-        round(int(beatmap_bpm))
+        beatmap_bpm = float(beatmap_bpm) * 0.6666
+
         time_total = sec_to_min(float(beatmap_data['total_length']) * 1.5)
         time_drain = sec_to_min(float(beatmap_data['hit_length']) * 1.5)
         beatmap_time = f'{time_total} ({time_drain})'
@@ -538,7 +538,7 @@ def create_play_embed(user, beatmap_id=None, channel_id=None, beatmap_only=False
     beatmap_difficulty = f'CS: `{beatmap_cs}` AR: `{beatmap_ar}`\n' \
                          f'OD: `{beatmap_od}` HP: `{beatmap_hp}`'
     beatmap_info = f'Length: `{beatmap_time}`\n' \
-                   f'BPM: `{beatmap_bpm}` Combo: `{beatmap_max_combo}`'
+                   f'BPM: `{int(beatmap_bpm)}` Combo: `{beatmap_max_combo}`'
 
     # Determine acc
     n0 = int(beatmap['countmiss'])
