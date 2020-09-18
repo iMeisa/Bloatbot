@@ -81,7 +81,7 @@ async def on_message(message):
             if aupsie:
                 await message.channel.send('oi')
 
-    protest = randint(1, 1000) == 500
+    protest = randint(1, 1000) == 500 or '<:angryasfuk:756187172230397973>' in message.content
     if protest:
         await message.channel.send(':angryasfuk:')
     else:
