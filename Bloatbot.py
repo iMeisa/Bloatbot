@@ -81,7 +81,11 @@ async def on_message(message):
             if aupsie:
                 await message.channel.send('oi')
 
-    await client.process_commands(message)
+    protest = randint(1, 1000) == 500
+    if protest:
+        await message.channel.send(':angryasfuk:')
+    else:
+        await client.process_commands(message)
 
 
 @client.command()
