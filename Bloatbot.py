@@ -428,7 +428,10 @@ def create_play_embed(user, beatmap_id=None, channel_id=None, beatmap_only=False
     beatmap_title = f'{beatmap_data["artist"]} - {beatmap_data["title"]} [{beatmap_data["version"]}]'
     beatmap_link = 'https://osu.ppy.sh/b/' + beatmap_id
     beatmap_score = int(beatmap['score'])
-    beatmap_sr = beatmap_data['difficultyrating'][:4]
+    beatmap_sr = float(beatmap_data['difficultyrating'][:4])
+
+    # Mods
+    enabled_mods = get_mods(beatmap['enabled_mods'])
 
     # Write data to file for *c
     if channel_id is not None:
@@ -458,10 +461,38 @@ def create_play_embed(user, beatmap_id=None, channel_id=None, beatmap_only=False
     beatmap_time = f'{sec_to_min(beatmap_data["total_length"])} ({sec_to_min(beatmap_data["hit_length"])})'
     beatmap_bpm = beatmap_data['bpm']
     beatmap_max_combo = beatmap_data['max_combo']
-    beatmap_cs = beatmap_data['diff_size']
-    beatmap_ar = beatmap_data['diff_approach']
-    beatmap_od = beatmap_data['diff_overall']
-    beatmap_hp = beatmap_data['diff_drain']
+    beatmap_cs = float(beatmap_data['diff_size'])
+    beatmap_ar = float(beatmap_data['diff_approach'])
+    beatmap_od = float(beatmap_data['diff_overall'])
+    beatmap_hp = float(beatmap_data['diff_drain'])
+
+    # Mod difficulty recalculation
+    if 'HR' in enabled_mods:
+        beatmap_cs *= 1.3
+        beatmap_ar *= 1.4
+        if beatmap_ar > 10:
+            beatmap_ar = 10
+        beatmap_od *= 1.4
+        if beatmap_od > 10:
+            beatmap_od = 10
+        beatmap_hp *= 1.4
+        if beatmap_hp > 10:
+            beatmap_hp = 10
+    elif 'EZ' in enabled_mods:
+        beatmap_cs /= 2
+        beatmap_ar /= 2
+        beatmap_od /= 2
+        beatmap_hp /= 2
+    if 'DT' in enabled_mods:
+        beatmap_cs = str(beatmap_sr) + '+'
+        beatmap_ar = str(beatmap_sr) + '+'
+        beatmap_od = str(beatmap_sr) + '+'
+        beatmap_hp = str(beatmap_sr) + '+'
+    elif 'HT' in enabled_mods:
+        beatmap_cs = str(beatmap_sr) + '-'
+        beatmap_ar = str(beatmap_sr) + '-'
+        beatmap_od = str(beatmap_sr) + '-'
+        beatmap_hp = str(beatmap_sr) + '-'
 
     beatmap_difficulty = f'CS: `{beatmap_cs}` AR: `{beatmap_ar}`\n' \
                          f'OD: `{beatmap_od}` HP: `{beatmap_hp}`'
@@ -479,9 +510,6 @@ def create_play_embed(user, beatmap_id=None, channel_id=None, beatmap_only=False
     # Combo count and notes
     score_combo = f'**{beatmap["maxcombo"]}x**/{beatmap_data["max_combo"]}X' \
                   f'\n{{ {n300} / {n100} / {n50} / {n0} }}'
-
-    # Mods
-    enabled_mods = get_mods(beatmap['enabled_mods'])
 
     # Footer time diff
     time_diff = get_time_diff(beatmap['date'])
