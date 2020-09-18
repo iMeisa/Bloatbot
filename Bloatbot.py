@@ -11,6 +11,7 @@ from datetime import datetime
 with open('token.txt', 'r') as fl:
     TOKEN = fl.read()
 client = commands.Bot(command_prefix='*')
+client.remove_command('help')
 
 
 @client.event
@@ -89,6 +90,11 @@ async def on_message(message):
         await message.channel.send('<:angryasfuk:756187172230397973>')
     else:
         await client.process_commands(message)
+
+
+@client.command()
+async def help(ctx):
+    await ctx.send('You can check out https://github.com/iMeisa/Bloatbot/wiki/Bloatbot-Commands for my command page')
 
 
 @client.command()
