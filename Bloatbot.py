@@ -492,27 +492,27 @@ def create_play_embed(user, beatmap_id=None, channel_id=None, beatmap_only=False
         beatmap_od /= 2
         beatmap_hp /= 2
     if 'DT' in enabled_mods:
-        beatmap_cs = str(beatmap_sr) + '+'
-        beatmap_ar = str(beatmap_sr) + '+'
-        beatmap_od = str(beatmap_sr) + '+'
-        beatmap_hp = str(beatmap_sr) + '+'
+        beatmap_cs = str(beatmap_cs) + '+'
+        beatmap_ar = str(beatmap_ar) + '+'
+        beatmap_od = str(beatmap_od) + '+'
+        beatmap_hp = str(beatmap_hp) + '+'
 
         # BPM and Time recalculation
         beatmap_bpm = float(beatmap_bpm) * 0.6666
-        round(beatmap_bpm)
+        round(int(beatmap_bpm))
         time_total = sec_to_min(float(beatmap_data['total_length']) * 0.6666)
         time_drain = sec_to_min(float(beatmap_data['hit_length']) * 0.6666)
         beatmap_time = f'{time_total} ({time_drain})'
 
     elif 'HT' in enabled_mods:
-        beatmap_cs = str(beatmap_sr) + '-'
-        beatmap_ar = str(beatmap_sr) + '-'
-        beatmap_od = str(beatmap_sr) + '-'
-        beatmap_hp = str(beatmap_sr) + '-'
+        beatmap_cs = str(beatmap_cs) + '-'
+        beatmap_ar = str(beatmap_ar) + '-'
+        beatmap_od = str(beatmap_od) + '-'
+        beatmap_hp = str(beatmap_hp) + '-'
 
         # BPM and Time recalculation
         beatmap_bpm = float(beatmap_bpm) * 1.5
-        round(beatmap_bpm)
+        round(int(beatmap_bpm))
         time_total = sec_to_min(float(beatmap_data['total_length']) * 1.5)
         time_drain = sec_to_min(float(beatmap_data['hit_length']) * 1.5)
         beatmap_time = f'{time_total} ({time_drain})'
