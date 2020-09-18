@@ -81,11 +81,19 @@ async def on_message(message):
             if aupsie:
                 await message.channel.send('oi')
 
-    protest = randint(1, 1000) == 500 or '<:angryasfuk:756187172230397973>' in message.content
-    if protest and message.author.display_name != 'Bloatbot':
+    if '<:angryasfuk:756187172230397973>' in message.content or 'fuck' in message.content.lower():
+        if message.authoer.display_name != 'Bloatbot':
+            await message.channel.send('<:angryasfuk:756187172230397973>')
+    angry = randint(1, 1000) == 500
+    if angry and message.author.display_name != 'Bloatbot':
         await message.channel.send('<:angryasfuk:756187172230397973>')
     else:
         await client.process_commands(message)
+
+
+@client.command()
+async def protest(ctx):
+    await ctx.send('<:angryasfuk:756187172230397973>')
 
 
 @client.command()

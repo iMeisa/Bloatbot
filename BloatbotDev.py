@@ -21,5 +21,12 @@ async def on_ready():
 async def on_message(message):
     print(message.content)
 
+    await client.process_commands(message)
+
+
+@client.command()
+async def protest(ctx):
+    await ctx.send('<:angryasfuk:756187172230397973>')
+
 
 client.run(TOKEN)
