@@ -708,7 +708,7 @@ async def ttt(ctx, *, params=''):
         player2_score = int(score2['score'])
 
         # Mod recalculation if necessary
-        free_mod = 'FM' in mappool_id or 'TB' in mappool_id
+        free_mod = 'FM' in mappool_id
         if free_mod:
             player1_mods = get_mods(score1['enabled_mods'], separate=False)
             player2_mods = get_mods(score2['enabled_mods'], separate=False)
