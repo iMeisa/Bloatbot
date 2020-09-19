@@ -331,7 +331,7 @@ def mod_recalculate(score, mods):
 
     if mods in ['None', '']:
         score *= 0.72
-        return str(int(score))
+        return int(score)
 
     multiplier = 1.0
     if 'EZ' in mods:
@@ -341,7 +341,7 @@ def mod_recalculate(score, mods):
     if 'FL' in mods:
         multiplier += 1.0
 
-    return str(int(score * multiplier))
+    return int(score * multiplier)
 
 
 def get_time_diff(time_origin):
@@ -704,8 +704,8 @@ async def ttt(ctx, *, params=''):
         user_id1 = score1['user_id']
         user_id2 = score2['user_id']
 
-        player1_score = score1['score']
-        player2_score = score2['score']
+        player1_score = int(score1['score'])
+        player2_score = int(score2['score'])
 
         # Mod recalculation if necessary
         free_mod = 'FM' in mappool_id or 'TB' in mappool_id

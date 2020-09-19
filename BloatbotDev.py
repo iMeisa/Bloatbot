@@ -92,7 +92,7 @@ def mod_recalculate(score, mods):
 
     if mods in ['None', '']:
         score *= 0.72
-        return str(int(score))
+        return score
 
     multiplier = 1.0
     if 'EZ' in mods:
@@ -102,7 +102,7 @@ def mod_recalculate(score, mods):
     if 'FL' in mods:
         multiplier += 1.0
 
-    return str(int(score * multiplier))
+    return score * multiplier
 
 
 def get_time_diff(time_origin):
@@ -172,223 +172,125 @@ def remove_param(user_string, param):
     return user_string[3:]
 
 
-def create_play_embed(user, beatmap_id=None, channel_id=None, beatmap_only=False, show_all=False):
-    play_only = (beatmap_only + show_all) < 1  # True or False
+@client.command()
+async def ttt(ctx, *, params=''):
+    # Separate comments from params
+    params = params.split()
+    match_link = params[0]
+    comments = ''
+    if len(params) > 1:
+        comment_words = params[1:]
+        for word in comment_words:
+            comments += word + ' '
 
-    user_data = get_user_data(user)
-    user_pfp = 'https://a.ppy.sh/' + user_data['user_id']
+    # Extract match ID from link
+    match_url_split = match_link.split('/')
+    match_id = match_url_split[-1]
 
-    # Create URL string
-    if beatmap_id is None:
-        # *r
-        query = urlencode({'k': api_key, 'u': user, 'type': 'string', 'limit': 1})
-        url = 'get_user_recent' + '?' + query
+    # Create URL
+    query = urlencode({'k': api_key, 'mp': match_id})
+    url_params = 'get_match?' + query
+
+    # Get match data
+    match_data = call_api(url_params)
+    match_title = match_data['match']['name']
+    match_games = match_data['games']
+
+    # Get mappool from file
+    mappool = {}
+    with open('tttmappool.txt', 'r') as f:
+        mappool_raw = f.read().split('\n')
+        for beatmap in mappool_raw:
+            beatmap_pool_id = beatmap.split(' ')
+            pool_id = beatmap_pool_id[1]
+            map_id = beatmap_pool_id[0]
+            mappool[map_id] = pool_id
+
+    # Analyze scores
+    match_scores = []
+    player_scores = {}
+    user_ids = {}
+    for game in match_games:
+
+        game_scores = game['scores']
+        beatmap_id = game['beatmap_id']
+        if beatmap_id not in mappool:
+            continue
+        mappool_id = mappool[beatmap_id]
+
+        # Only used for 1v1
+        score1 = game_scores[0]
+        score2 = game_scores[1]
+        user_id1 = score1['user_id']
+        user_id2 = score2['user_id']
+
+        player1_score = int(score1['score'])
+        player2_score = int(score2['score'])
+
+        # Mod recalculation if necessary
+        free_mod = 'FM' in mappool_id or 'TB' in mappool_id
+        if free_mod:
+            player1_mods = get_mods(score1['enabled_mods'], separate=False)
+            player2_mods = get_mods(score2['enabled_mods'], separate=False)
+            player1_score = int(mod_recalculate(player1_score, player1_mods))
+            player2_score = int(mod_recalculate(player2_score, player2_mods))
+
+        # Cache usernames
+        if user_id1 not in player_scores:
+            player_scores[user_id1] = 0
+            player_scores[user_id2] = 0
+            user_ids[user_id1] = get_user_data(user_id1)['username']
+            user_ids[user_id2] = get_user_data(user_id2)['username']
+
+        if player1_score > player2_score:
+            player_scores[user_id1] += 1
+        else:
+            player_scores[user_id2] += 1
+
+        beatmap_data = get_beatmap_data(beatmap_id)
+
+        # Store round data
+        beatmap_title = f'{mappool_id}: _{beatmap_data["artist"]} - {beatmap_data["title"]}_'
+        match_scores.append([beatmap_title, user_id1, player1_score, user_id2, player2_score])
+
+    # Highlight the higher final score in bold
+    player1_id = list(user_ids.keys())[0]
+    player2_id = list(user_ids.keys())[1]
+    if player_scores[player1_id] > player_scores[player2_id]:
+        final_score = f'**{user_ids[player1_id]} {player_scores[player1_id]}** | ' \
+                      f'{player_scores[player2_id]} {user_ids[player2_id]}'
     else:
-        # *c
-        query = urlencode({'k': api_key, 'b': beatmap_id, 'u': user, 'm': 0, 'type': 'string', 'limit': 1})
-        url = 'get_scores' + '?' + query
+        final_score = f'{user_ids[player1_id]} {player_scores[player1_id]} | ' \
+                      f'**{player_scores[player2_id]} {user_ids[player2_id]}**'
 
-    # User data
-    user_play_data = call_api(url)
-    user_url = 'https://osu.ppy.sh/u/' + user
-    username = user_data['username']
-    user_pp = float(user_data['pp_raw'])
-    user_global = int(user_data['pp_rank'])
-    user_country = user_data['country']
-    user_country_pp = int(user_data['pp_country_rank'])
-    user_title = f'{username}: {user_pp:,}pp (#{user_global:,} {user_country}{user_country_pp})'
-
-    # If received None
-    if len(user_play_data) < 1:
-        if channel_id is not None:
-            return f"{user} hasn't clicked circles in a while"
-        return f"{user} hasn't passed this map yet"
-
-    # Assign beatmap data variable constants
-    beatmap = user_play_data[0]
-    if beatmap_id is None:
-        beatmap_id = beatmap['beatmap_id']
-    beatmap_data = get_beatmap_data(beatmap_id, beatmap['enabled_mods'])
-    beatmap_cover = 'https://assets.ppy.sh/beatmaps/' + beatmap_data['beatmapset_id'] + '/covers/cover.jpg'
-    beatmap_title = f'{beatmap_data["artist"]} - {beatmap_data["title"]} [{beatmap_data["version"]}]'
-    beatmap_link = 'https://osu.ppy.sh/b/' + beatmap_id
-    beatmap_score = int(beatmap['score'])
-    beatmap_sr = float(beatmap_data['difficultyrating'][:4])
-
-    # Mods
-    enabled_mods = get_mods(beatmap['enabled_mods'])
-
-    # Write data to file for *c
-    if channel_id is not None:
-        with open('recentbeatmaps.json', 'r') as f:
-            recent_beatmaps = json.load(f)
-
-        recent_beatmaps[str(channel_id)] = beatmap['beatmap_id']
-        with open('recentbeatmaps.json', 'w') as f:
-            json.dump(recent_beatmaps, f)
-
-    # Determine rank status
-    beatmap_rank_status = beatmap_data['approved']
-    if beatmap_rank_status == '4':
-        rank_status = ':heart:'
-    elif beatmap_rank_status in ['3', '2']:
-        rank_status = ':white_check_mark:'
-    elif beatmap_rank_status == '1':
-        rank_status = ':arrow_double_up:'
-    elif beatmap_rank_status == '0':
-        rank_status = ':clock3:'
-    elif beatmap_rank_status == '-1':
-        rank_status = ':tools:'
-    else:
-        rank_status = ':pirate_flag:'
-
-    # Beatmap details
-    beatmap_time = f'{sec_to_min(beatmap_data["total_length"])} ({sec_to_min(beatmap_data["hit_length"])})'
-    beatmap_bpm = beatmap_data['bpm']
-    beatmap_max_combo = beatmap_data['max_combo']
-    beatmap_cs = float(beatmap_data['diff_size'])
-    beatmap_ar = float(beatmap_data['diff_approach'])
-    beatmap_od = float(beatmap_data['diff_overall'])
-    beatmap_hp = float(beatmap_data['diff_drain'])
-
-    # Mod difficulty recalculation
-    if 'HR' in enabled_mods:
-        beatmap_cs *= 1.3
-        round(beatmap_cs, 2)
-
-        beatmap_ar *= 1.4
-        round(beatmap_ar, 2)
-        if beatmap_ar > 10:
-            beatmap_ar = 10
-
-        beatmap_od *= 1.4
-        round(beatmap_od, 2)
-        if beatmap_od > 10:
-            beatmap_od = 10
-
-        beatmap_hp *= 1.4
-        round(beatmap_hp, 2)
-        if beatmap_hp > 10:
-            beatmap_hp = 10
-
-    elif 'EZ' in enabled_mods:
-        beatmap_cs /= 2
-        beatmap_ar /= 2
-        beatmap_od /= 2
-        beatmap_hp /= 2
-    if 'DT' in enabled_mods:
-        beatmap_cs = str(beatmap_cs) + '+'
-        beatmap_ar = str(beatmap_ar) + '+'
-        beatmap_od = str(beatmap_od) + '+'
-        beatmap_hp = str(beatmap_hp) + '+'
-
-        # BPM and Time recalculation
-        beatmap_bpm = float(beatmap_bpm) * 1.5
-        beatmap_bpm = int(beatmap_bpm)
-        time_total = sec_to_min(float(beatmap_data['total_length']) * 0.6666)
-        time_drain = sec_to_min(float(beatmap_data['hit_length']) * 0.6666)
-        beatmap_time = f'{time_total} ({time_drain})'
-
-    elif 'HT' in enabled_mods:
-        beatmap_cs = str(beatmap_cs) + '-'
-        beatmap_ar = str(beatmap_ar) + '-'
-        beatmap_od = str(beatmap_od) + '-'
-        beatmap_hp = str(beatmap_hp) + '-'
-
-        # BPM and Time recalculation
-        beatmap_bpm = float(beatmap_bpm) * 0.6666
-        round(int(beatmap_bpm))
-        time_total = sec_to_min(float(beatmap_data['total_length']) * 1.5)
-        time_drain = sec_to_min(float(beatmap_data['hit_length']) * 1.5)
-        beatmap_time = f'{time_total} ({time_drain})'
-
-    beatmap_difficulty = f'CS: `{beatmap_cs}` AR: `{beatmap_ar}`\n' \
-                         f'OD: `{beatmap_od}` HP: `{beatmap_hp}`'
-    beatmap_info = f'Length: `{beatmap_time}`\n' \
-                   f'BPM: `{int(beatmap_bpm)}` Combo: `{beatmap_max_combo}`'
-
-    # Determine acc
-    n0 = int(beatmap['countmiss'])
-    n50 = int(beatmap['count50'])
-    n100 = int(beatmap['count100'])
-    n300 = int(beatmap['count300'])
-    beatmap_acc = get_acc(n0, n50, n100, n300)
-    score_title = f'{beatmap_score:,}  ({beatmap_acc[:5]}%)'
-
-    # Combo count and notes
-    score_combo = f'**{beatmap["maxcombo"]}x**/{beatmap_data["max_combo"]}X' \
-                  f'\n{{ {n300} / {n100} / {n50} / {n0} }}'
-
-    # Footer time diff
-    time_diff = get_time_diff(beatmap['date'])
-
-    # Create embed
     embed = discord.Embed(
-        title=rank_status + ' ' + beatmap_title,
-        url=beatmap_link,
-        description=f'**{beatmap_sr}** :star:',
-        image=beatmap_cover
+        title=match_title,
+        url=match_link,
+        colour=discord.Colour.magenta(),
+        description=final_score
     )
 
-    # Set embed color based on rank
-    if beatmap_only:
-        embed.colour = discord.Color.teal()
-    elif beatmap['rank'] in ['SH', 'SSH']:
-        embed.colour = discord.Color.light_grey()
-    elif beatmap['rank'] in ['S', 'SS']:
-        embed.colour = discord.Color.gold()
-    elif beatmap['rank'] == 'A':
-        embed.colour = discord.Color.dark_green()
-    elif beatmap['rank'] == 'B':
-        embed.colour = discord.Color.blue()
-    elif beatmap['rank'] == 'C':
-        embed.colour = discord.Color.purple()
-    elif beatmap['rank'] == 'D':
-        embed.colour = discord.Color.red()
+    for score in match_scores:
+        beatmap_title = score[0]
+        player1_name = user_ids[score[1]]
+        player1_score = int(score[2])
+        player2_name = user_ids[score[3]]
+        player2_score = int(score[4])
 
-    embed.set_author(name=user_title, icon_url=user_pfp, url=user_url)
-    embed.set_image(url=beatmap_cover)
+        # Highlight each highest score in bold
+        if player1_score > player2_score:
+            value_score = f'**{player1_name} {player1_score:,}** | {player2_score:,} {player2_name}'
+        else:
+            value_score = f'{player1_name} {player1_score:,} | **{player2_score:,} {player2_name}**'
 
-    if play_only or show_all:
-        embed.add_field(name=score_title, value=score_combo, inline=True)
-        embed.add_field(name='Mods:', value=enabled_mods, inline=True)
-        embed.set_footer(text=time_diff)
-    if beatmap_only or show_all:
-        if show_all:
-            embed.add_field(name='-' * 80, value=f'**{"-" * 80}**', inline=False)
-        embed.add_field(name='Beatmap Difficulty', value=beatmap_difficulty, inline=True)
-        embed.add_field(name='Beatmap Info', value=beatmap_info, inline=True)
+        embed.add_field(name=beatmap_title, value=value_score, inline=False)
 
-    return embed
+    # Thumbnail = "The" Logo
+    thumbnail = 'https://cdn.discordapp.com/attachments/734824448137625731/734824581080285265/TheLogoFinal.png'
+    embed.set_thumbnail(url=thumbnail)
+    embed.set_footer(text=comments)
 
-
-@client.command()
-async def r(ctx, *, user_param=''):
-    # Check if username is given
-    def check_given_user(username):
-        if len(username) < 3:
-            checked_username = ctx.author.display_name
-            return checked_username
-        return username
-
-    user = check_given_user(user_param)
-
-    # Extract parameters
-    beatmap_only = False
-    show_all = False
-    if user_param.startswith('-a ') or user_param.endswith('-a'):
-        show_all = True
-        user = check_given_user(remove_param(user_param, '-a'))
-    elif user_param.startswith('-b ') or user_param.endswith('-b'):
-        beatmap_only = True
-        user = check_given_user(remove_param(user_param, '-b'))
-
-    embed = create_play_embed(user, channel_id=ctx.channel.id, beatmap_only=beatmap_only, show_all=show_all)
-
-    if isinstance(embed, str):
-        await ctx.send(embed)
-    else:
-        await ctx.send(embed=embed)
+    await ctx.send(embed=embed)
 
 
 client.run(TOKEN)
