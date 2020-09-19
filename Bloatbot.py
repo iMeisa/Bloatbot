@@ -272,7 +272,7 @@ def get_user_data(username):
 
 def get_beatmap_data(beatmap_id, mod_bytes_raw=0):
     current_mods = get_mods(mod_bytes_raw, separate=False)
-    acceptable_mods = {'EZ': 2, 'HR': 8, 'DT': 64, 'HT': 256, 'NC': 64}
+    acceptable_mods = {'EZ': 2, 'HR': 16, 'DT': 64, 'HT': 256, 'NC': 64}
 
     change_sr = False
     used_mods = []
