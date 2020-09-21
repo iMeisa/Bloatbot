@@ -250,6 +250,12 @@ async def poll(ctx, *, params):
         await msg.add_reaction(poll_letters[i])
 
 
+@client.command(alias=['inv'])
+async def invite(ctx):
+    link = 'https://discord.com/api/oauth2/authorize?client_id=709553138977210381&permissions=1879960642&scope=bot'
+    await ctx.send('Invite me to your server with this link: ' + link)
+
+
 # osu! API
 with open('osuAPI.pickle', 'rb') as fl:
     api_key = pickle.load(fl)
