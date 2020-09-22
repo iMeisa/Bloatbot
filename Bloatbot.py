@@ -7,6 +7,8 @@ import json
 import pickle
 from ratelimit import limits, sleep_and_retry
 from datetime import datetime
+import subprocess
+import os
 
 with open('token.txt', 'r') as fl:
     TOKEN = fl.read()
@@ -411,6 +413,27 @@ def sec_to_min(seconds_raw):
     return f'{minutes}:{seconds}'
 
 
+def pp_calculation(map_id, mods=None, percentage=0.0, max_combo=None, miss_count=0):
+    if not os.path.isfile('oppai-cache/' + map_id + '.osu'):
+        os.system(f'curl https://osu.ppy.sh/osu/{map_id} > oppai-cache/{map_id}.osu')
+
+    params = ''
+    if mods is not None:
+        params += ' +' + mods
+    if percentage < 100:
+        params += f' {percentage}%'
+    if max_combo is not None:
+        params += f' {max_combo}x'
+    if miss_count > 0:
+        params += f' {miss_count}m'
+
+    pp_data = subprocess.check_output(f'oppai oppai-cache/{map_id}.osu {params}',
+                                      shell=True).decode('UTF-8').split('\n')
+    map_pp_data = pp_data[-3].split()
+    pp_total = map_pp_data[0]
+    return pp_total
+
+
 def remove_param(user_string, param):
     if user_string.endswith(param):
         return user_string[:-3]
@@ -565,6 +588,14 @@ def create_play_embed(user, beatmap_id=None, channel_id=None, beatmap_only=False
     # Footer time diff
     time_diff = get_time_diff(beatmap['date'])
 
+    # Calculate PP
+    compressed_mods = get_mods(beatmap['enabled_mods'], separate=False)
+    pp_achieved = pp_calculation(beatmap_id, mods=compressed_mods, percentage=float(beatmap_acc),
+                                 max_combo=beatmap['maxcombo'], miss_count=n0)
+    pp_max = pp_calculation(beatmap_id)
+
+    pp_value = f'**{pp_achieved}pp**/{pp_max}PP'
+
     # Create embed
     embed = discord.Embed(
         title=rank_status + ' ' + beatmap_title,
@@ -595,6 +626,7 @@ def create_play_embed(user, beatmap_id=None, channel_id=None, beatmap_only=False
     if play_only or show_all:
         embed.add_field(name=score_title, value=score_combo, inline=True)
         embed.add_field(name='Mods:', value=enabled_mods, inline=True)
+        embed.add_field(name='PP:', value=pp_value, inline=True)
         embed.set_footer(text=time_diff)
     if beatmap_only or show_all:
         if show_all:

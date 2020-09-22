@@ -1,5 +1,6 @@
 venv/
 .idea/
+oppai-cache/*
 osuAPI.pickle
 token.txt
 testtoken.txt
