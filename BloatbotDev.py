@@ -177,9 +177,6 @@ def sec_to_min(seconds_raw):
 def pp_calculation(map_id, mods=None, percentage=0.0, max_combo=None, miss_count=0):
     if not os.path.isfile('oppai-cache/' + map_id + '.osu'):
         os.system(f'curl https://osu.ppy.sh/osu/{map_id} > oppai-cache/{map_id}.osu')
-        print('Downloading new beatmap')
-    else:
-        print('Using cached map')
 
     params = ''
     if mods is not None:
@@ -360,11 +357,25 @@ def create_play_embed(user, beatmap_id=None, channel_id=None, beatmap_only=False
 
     pp_value = f'**{pp_achieved}pp**/{pp_max}PP'
 
+    # Calculate map progress if failed
+    pass_percentage = ''
+    if beatmap['rank'] == 'F':
+        beatmap_dir = f'oppai-cache/{beatmap_id}.osu'
+        if not os.path.isfile(beatmap_dir):
+            os.system(f'curl https://osu.ppy.sh/osu/{beatmap_id} > {beatmap_dir}')
+
+        with open(beatmap_dir, 'r') as f:
+            map_meta = f.readlines()
+        object_start = map_meta.index('[HitObjects]\n')
+        object_count = len(map_meta) - object_start - 2
+        objects_hit = n0 + n50 + n100 + n300
+        pass_percentage = f'({str(int(objects_hit / object_count * 100))[:5]}% through)'
+
     # Create embed
     embed = discord.Embed(
         title=rank_status + ' ' + beatmap_title,
         url=beatmap_link,
-        description=f'**{beatmap_sr}** :star:',
+        description=f'**{beatmap_sr}** :star: {pass_percentage}',
         image=beatmap_cover
     )
 
@@ -428,14 +439,6 @@ async def rs(ctx, *, user_param=''):
         await ctx.send(embed)
     else:
         await ctx.send(embed=embed)
-
-
-@client.command()
-async def p(ctx, map_link):
-    map_id = map_link.split('/')[-1]
-    os.system(f'curl https://osu.ppy.sh/osu/{map_id} > oppai-cache/{map_id}.osu')
-    p = subprocess.check_output(f'oppai oppai-cache/{map_id}.osu', shell=True).decode('UTF-8').split('\n')
-    await ctx.send(p[-3])
 
 
 client.run(TOKEN)
