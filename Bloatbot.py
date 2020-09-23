@@ -413,7 +413,7 @@ def sec_to_min(seconds_raw):
     return f'{minutes}:{seconds}'
 
 
-def pp_calculation(map_id, mods=None, percentage=0.0, max_combo=None, miss_count=0):
+def pp_calculation(map_id, mods=None, percentage=100.0, max_combo=None, miss_count=0):
     if not os.path.isfile('oppai-cache/' + map_id + '.osu'):
         os.system(f'curl https://osu.ppy.sh/osu/{map_id} > oppai-cache/{map_id}.osu')
 
@@ -586,8 +586,9 @@ def create_play_embed(user, beatmap_id=None, channel_id=None, beatmap_only=False
 
     beatmap_difficulty = f'CS: `{beatmap_cs}` AR: `{beatmap_ar}`\n' \
                          f'OD: `{beatmap_od}` HP: `{beatmap_hp}`'
-    beatmap_info = f'Length: `{beatmap_time}`\n' \
-                   f'BPM: `{int(beatmap_bpm)}` Combo: `{beatmap_max_combo}`'
+    beatmap_info = f'''Length: `{beatmap_time}`
+                   BPM: `{int(beatmap_bpm)}` 
+                   Combo: `{beatmap_max_combo}`'''
 
     # Determine acc
     n0 = int(beatmap['countmiss'])
@@ -608,12 +609,19 @@ def create_play_embed(user, beatmap_id=None, channel_id=None, beatmap_only=False
     compressed_mods = get_mods(beatmap['enabled_mods'], separate=False)
     pp_achieved = pp_calculation(beatmap_id, mods=compressed_mods, percentage=float(beatmap_acc),
                                  max_combo=beatmap['maxcombo'], miss_count=n0)
-    pp_max = pp_calculation(beatmap_id)
+    pp_max = pp_calculation(beatmap_id, mods=compressed_mods)
 
     if beatmap_rank_status in ['2', '1']:
         pp_value = f'**{pp_achieved}pp**/{pp_max}PP'
     else:
         pp_value = f'~~**{pp_achieved}pp**/{pp_max}PP~~'
+
+    # Theoretical pp values
+    pp_95 = pp_calculation(beatmap_id, mods=compressed_mods, percentage=95)
+    pp_98 = pp_calculation(beatmap_id, mods=compressed_mods, percentage=98)
+    pp_99 = pp_calculation(beatmap_id, mods=compressed_mods, percentage=99)
+
+    theoretical_pp = f'95%: {pp_95}pp\n98%: {pp_98}pp\n99%: {pp_99}pp\n100%: {pp_max}pp'
 
     # Calculate map progress if failed
     pass_percentage = ''
@@ -666,6 +674,7 @@ def create_play_embed(user, beatmap_id=None, channel_id=None, beatmap_only=False
             embed.add_field(name='-' * 80, value=f'**{"-" * 80}**', inline=False)
         embed.add_field(name='Beatmap Difficulty', value=beatmap_difficulty, inline=True)
         embed.add_field(name='Beatmap Info', value=beatmap_info, inline=True)
+        embed.add_field(name='PP Values:', value=theoretical_pp, inline=True)
         embed.set_footer(text=mapper_details, icon_url=mapper_pfp)
 
     return embed
