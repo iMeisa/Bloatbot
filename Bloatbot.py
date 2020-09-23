@@ -392,7 +392,7 @@ def get_time_diff(time_origin):
             if time_diff.days > 1:
                 f'{time_diff.days} days ago'
             else:
-                '1 days ago'
+                '1 day ago'
 
 
 def get_acc(n0, n50, n100, n300):
@@ -497,11 +497,15 @@ def create_play_embed(user, beatmap_id=None, channel_id=None, beatmap_only=False
 
     # Determine rank status
     beatmap_rank_status = beatmap_data['approved']
+    approve_status = 'last_updated'
     if beatmap_rank_status == '4':
+        approve_status = 'loved'
         rank_status = ':heart:'
     elif beatmap_rank_status in ['3', '2']:
+        approve_status = 'qualified'
         rank_status = ':white_check_mark:'
     elif beatmap_rank_status == '1':
+        approve_status = 'ranked'
         rank_status = ':arrow_double_up:'
     elif beatmap_rank_status == '0':
         rank_status = ':clock3:'
@@ -518,6 +522,18 @@ def create_play_embed(user, beatmap_id=None, channel_id=None, beatmap_only=False
     beatmap_ar = float(beatmap_data['diff_approach'])
     beatmap_od = float(beatmap_data['diff_overall'])
     beatmap_hp = float(beatmap_data['diff_drain'])
+
+    # Mapper details
+    beatmap_mapper = beatmap_data['creator']
+    mapper_id = beatmap_data['creator_id']
+    if beatmap_data['approved_date'] is not None:
+        upload_date = beatmap_data['approved_date']
+    else:
+        upload_date = beatmap_data['last_update']
+    upload_time_diff = get_time_diff(upload_date)
+
+    mapper_details = f'Mapped by {beatmap_mapper}, {approve_status} {upload_time_diff}'
+    mapper_pfp = 'https://a.ppy.sh/' + mapper_id
 
     # Mod difficulty recalculation
     if 'HR' in enabled_mods:
@@ -650,6 +666,7 @@ def create_play_embed(user, beatmap_id=None, channel_id=None, beatmap_only=False
             embed.add_field(name='-' * 80, value=f'**{"-" * 80}**', inline=False)
         embed.add_field(name='Beatmap Difficulty', value=beatmap_difficulty, inline=True)
         embed.add_field(name='Beatmap Info', value=beatmap_info, inline=True)
+        embed.set_footer(text=mapper_details, icon_url=mapper_pfp)
 
     return embed
 
