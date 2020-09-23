@@ -20,6 +20,8 @@ client.remove_command('help')
 async def on_ready():
     print('Bot is ready')
 
+version = 'v1.7.2'
+
 
 @client.event
 async def on_message(message):
@@ -159,8 +161,7 @@ async def loop(ctx, *, statement):
 
 @client.command()
 async def version(ctx):
-    with open('version.txt', 'r') as f:
-        await ctx.send(f.read())
+    await ctx.send(version)
 
 
 @client.command()
