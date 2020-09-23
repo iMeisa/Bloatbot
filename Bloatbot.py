@@ -621,11 +621,11 @@ def create_play_embed(user, beatmap_id=None, channel_id=None, beatmap_only=False
     pp_98 = pp_calculation(beatmap_id, mods=compressed_mods, percentage=98)
     pp_99 = pp_calculation(beatmap_id, mods=compressed_mods, percentage=99)
 
-    theoretical_pp = f'95%: {pp_95}pp\n98%: {pp_98}pp\n99%: {pp_99}pp\n100%: {pp_max}pp'
+    theoretical_pp = f'95%: `{pp_95}pp`\n98%: `{pp_98}pp`\n99%: `{pp_99}pp`\n100%: `{pp_max}pp`'
 
     # Calculate map progress if failed
     pass_percentage = ''
-    if beatmap['rank'] == 'F':
+    if beatmap['rank'] == 'F' and not beatmap_only:
         beatmap_dir = f'oppai-cache/{beatmap_id}.osu'
         if not os.path.isfile(beatmap_dir):
             os.system(f'curl https://osu.ppy.sh/osu/{beatmap_id} > {beatmap_dir}')
