@@ -588,7 +588,7 @@ def create_play_embed(user, beatmap_id=None, channel_id=None, beatmap_only=False
     beatmap_difficulty = f'CS: `{beatmap_cs}` AR: `{beatmap_ar}`\n' \
                          f'OD: `{beatmap_od}` HP: `{beatmap_hp}`'
     beatmap_info = f'''Length: `{beatmap_time}`
-                   BPM: `{int(beatmap_bpm)}` 
+                   BPM: `{int(beatmap_bpm)}`
                    Combo: `{beatmap_max_combo}`'''
 
     # Determine acc
@@ -629,14 +629,11 @@ def create_play_embed(user, beatmap_id=None, channel_id=None, beatmap_only=False
     # Calculate map progress if failed
     pass_percentage = ''
     if beatmap['rank'] == 'F' and not beatmap_only:
-        beatmap_dir = f'oppai-cache/{beatmap_id}.osu'
-        if not os.path.isfile(beatmap_dir):
-            os.system(f'curl https://osu.ppy.sh/osu/{beatmap_id} > {beatmap_dir}')
+        circles = int(beatmap_data['count_normal'])
+        sliders = int(beatmap_data['count_slider'])
+        spinners = int(beatmap_data['count_spinner'])
 
-        with open(beatmap_dir, 'r') as f:
-            map_meta = f.readlines()
-        object_start = map_meta.index('[HitObjects]\n')
-        object_count = len(map_meta) - object_start - 2
+        object_count = circles + sliders + spinners
         objects_hit = n0 + n50 + n100 + n300
         pass_percentage = f'({str(int(objects_hit / object_count * 100))[:5]}% through)'
 
