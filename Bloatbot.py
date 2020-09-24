@@ -612,7 +612,7 @@ def create_play_embed(user, beatmap_id=None, channel_id=None, beatmap_only=False
                                  max_combo=beatmap['maxcombo'], miss_count=n0)
     pp_max = pp_calculation(beatmap_id, mods=compressed_mods)
 
-    if beatmap['rank']:
+    if beatmap['rank'] == 'F':
         pp_value = f'~~**{pp_achieved}pp**/{pp_max}PP~~'
     elif beatmap_rank_status in ['2', '1']:
         pp_value = f'**{pp_achieved}pp**/{pp_max}PP'
