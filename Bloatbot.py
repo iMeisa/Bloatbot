@@ -391,9 +391,9 @@ def get_time_diff(time_origin):
                 return '1 month ago'
         else:
             if time_diff.days > 1:
-                f'{time_diff.days} days ago'
+                return f'{time_diff.days} days ago'
             else:
-                '1 day ago'
+                return '1 day ago'
 
 
 def get_acc(n0, n50, n100, n300):

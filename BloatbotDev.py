@@ -117,6 +117,7 @@ def get_time_diff(time_origin):
     fmt = '%Y-%m-%d %H:%M:%S'
     time_now = datetime.utcnow().strftime(fmt)
     time_diff = datetime.strptime(time_now, fmt) - datetime.strptime(time_origin, fmt)
+    print(time_diff.days)
 
     if time_diff.days < 1:
         if time_diff.seconds >= 3600:
@@ -151,9 +152,10 @@ def get_time_diff(time_origin):
                 return '1 month ago'
         else:
             if time_diff.days > 1:
+                print('week')
                 f'{time_diff.days} days ago'
             else:
-                '1 days ago'
+                '1 day ago'
 
 
 def get_acc(n0, n50, n100, n300):
@@ -174,7 +176,7 @@ def sec_to_min(seconds_raw):
     return f'{minutes}:{seconds}'
 
 
-def pp_calculation(map_id, mods=None, percentage=0.0, max_combo=None, miss_count=0):
+def pp_calculation(map_id, mods=None, percentage=100.0, max_combo=None, miss_count=0):
     if not os.path.isfile('oppai-cache/' + map_id + '.osu'):
         os.system(f'curl https://osu.ppy.sh/osu/{map_id} > oppai-cache/{map_id}.osu')
 
@@ -258,11 +260,15 @@ def create_play_embed(user, beatmap_id=None, channel_id=None, beatmap_only=False
 
     # Determine rank status
     beatmap_rank_status = beatmap_data['approved']
+    approve_status = 'last_updated'
     if beatmap_rank_status == '4':
+        approve_status = 'loved'
         rank_status = ':heart:'
     elif beatmap_rank_status in ['3', '2']:
+        approve_status = 'qualified'
         rank_status = ':white_check_mark:'
     elif beatmap_rank_status == '1':
+        approve_status = 'ranked'
         rank_status = ':arrow_double_up:'
     elif beatmap_rank_status == '0':
         rank_status = ':clock3:'
@@ -279,6 +285,19 @@ def create_play_embed(user, beatmap_id=None, channel_id=None, beatmap_only=False
     beatmap_ar = float(beatmap_data['diff_approach'])
     beatmap_od = float(beatmap_data['diff_overall'])
     beatmap_hp = float(beatmap_data['diff_drain'])
+
+    # Mapper details
+    beatmap_mapper = beatmap_data['creator']
+    mapper_id = beatmap_data['creator_id']
+    if beatmap_data['approved_date'] is not None:
+        upload_date = beatmap_data['approved_date']
+    else:
+        upload_date = beatmap_data['last_update']
+    print(upload_date)
+    upload_time_diff = get_time_diff(upload_date)
+
+    mapper_details = f'Mapped by {beatmap_mapper}, {approve_status} {upload_time_diff}'
+    mapper_pfp = 'https://a.ppy.sh/' + mapper_id
 
     # Mod difficulty recalculation
     if 'HR' in enabled_mods:
@@ -331,8 +350,9 @@ def create_play_embed(user, beatmap_id=None, channel_id=None, beatmap_only=False
 
     beatmap_difficulty = f'CS: `{beatmap_cs}` AR: `{beatmap_ar}`\n' \
                          f'OD: `{beatmap_od}` HP: `{beatmap_hp}`'
-    beatmap_info = f'Length: `{beatmap_time}`\n' \
-                   f'BPM: `{int(beatmap_bpm)}` Combo: `{beatmap_max_combo}`'
+    beatmap_info = f'''Length: `{beatmap_time}`
+                   BPM: `{int(beatmap_bpm)}`
+                   Combo: `{beatmap_max_combo}`'''
 
     # Determine acc
     n0 = int(beatmap['countmiss'])
@@ -353,21 +373,30 @@ def create_play_embed(user, beatmap_id=None, channel_id=None, beatmap_only=False
     compressed_mods = get_mods(beatmap['enabled_mods'], separate=False)
     pp_achieved = pp_calculation(beatmap_id, mods=compressed_mods, percentage=float(beatmap_acc),
                                  max_combo=beatmap['maxcombo'], miss_count=n0)
-    pp_max = pp_calculation(beatmap_id)
+    pp_max = pp_calculation(beatmap_id, mods=compressed_mods)
 
-    pp_value = f'**{pp_achieved}pp**/{pp_max}PP'
+    if beatmap['rank'] == 'F':
+        pp_value = f'~~**{pp_achieved}pp**/{pp_max}PP~~'
+    elif beatmap_rank_status in ['2', '1']:
+        pp_value = f'**{pp_achieved}pp**/{pp_max}PP'
+    else:
+        pp_value = f'~~**{pp_achieved}pp**/{pp_max}PP~~'
+
+    # Theoretical pp values
+    pp_95 = pp_calculation(beatmap_id, mods=compressed_mods, percentage=95)
+    pp_98 = pp_calculation(beatmap_id, mods=compressed_mods, percentage=98)
+    pp_99 = pp_calculation(beatmap_id, mods=compressed_mods, percentage=99)
+
+    theoretical_pp = f'95%: `{pp_95}pp`\n98%: `{pp_98}pp`\n99%: `{pp_99}pp`\n100%: `{pp_max}pp`'
 
     # Calculate map progress if failed
     pass_percentage = ''
-    if beatmap['rank'] == 'F':
-        beatmap_dir = f'oppai-cache/{beatmap_id}.osu'
-        if not os.path.isfile(beatmap_dir):
-            os.system(f'curl https://osu.ppy.sh/osu/{beatmap_id} > {beatmap_dir}')
+    if beatmap['rank'] == 'F' and not beatmap_only:
+        circles = int(beatmap_data['count_normal'])
+        sliders = int(beatmap_data['count_slider'])
+        spinners = int(beatmap_data['count_spinner'])
 
-        with open(beatmap_dir, 'r') as f:
-            map_meta = f.readlines()
-        object_start = map_meta.index('[HitObjects]\n')
-        object_count = len(map_meta) - object_start - 2
+        object_count = circles + sliders + spinners
         objects_hit = n0 + n50 + n100 + n300
         pass_percentage = f'({str(int(objects_hit / object_count * 100))[:5]}% through)'
 
@@ -408,6 +437,8 @@ def create_play_embed(user, beatmap_id=None, channel_id=None, beatmap_only=False
             embed.add_field(name='-' * 80, value=f'**{"-" * 80}**', inline=False)
         embed.add_field(name='Beatmap Difficulty', value=beatmap_difficulty, inline=True)
         embed.add_field(name='Beatmap Info', value=beatmap_info, inline=True)
+        embed.add_field(name='PP Values:', value=theoretical_pp, inline=True)
+        embed.set_footer(text=mapper_details, icon_url=mapper_pfp)
 
     return embed
 
@@ -434,6 +465,30 @@ async def rs(ctx, *, user_param=''):
         user = check_given_user(remove_param(user_param, '-b'))
 
     embed = create_play_embed(user, channel_id=ctx.channel.id, beatmap_only=beatmap_only, show_all=show_all)
+
+    if isinstance(embed, str):
+        await ctx.send(embed)
+    else:
+        await ctx.send(embed=embed)
+
+
+@client.command()
+async def co(ctx, *, user=''):
+    if len(user) < 3:
+        user = ctx.author.display_name
+
+    with open('recentbeatmaps.json', 'r') as f:
+        recent_beatmaps = json.load(f)
+
+    # Check if *r was used in the channel
+    channel_id = str(ctx.channel.id)
+    if channel_id not in recent_beatmaps:
+        await ctx.send("Can't find recent map")
+        raise ValueError
+
+    beatmap_id = recent_beatmaps[channel_id]
+
+    embed = create_play_embed(user, beatmap_id=beatmap_id)
 
     if isinstance(embed, str):
         await ctx.send(embed)
