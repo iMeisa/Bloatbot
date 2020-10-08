@@ -10,15 +10,14 @@ from datetime import datetime
 import subprocess
 import os
 
-with open('token.txt', 'r') as fl:
+with open('testtoken.txt', 'r') as fl:
     TOKEN = fl.read()
-client = commands.Bot(command_prefix='*')
+client = commands.Bot(command_prefix='b*')
 client.remove_command('help')
 
-
-@client.event
-async def on_ready():
-    print('Bot is ready')
+for filename in os.listdir('./Cogs'):
+    if filename.endswith('.py'):
+        client.load_extension(f'Cogs.{filename[:-3]}')
 
 bot_version = 'v1.7.2'
 
@@ -97,66 +96,8 @@ async def on_message(message):
 
 
 @client.command()
-async def help(ctx):
-    await ctx.send('You can check out https://github.com/iMeisa/Bloatbot/wiki/Bloatbot-Commands for my command page')
-
-
-@client.command()
-async def protest(ctx):
-    await ctx.send('<:angryasfuk:756187172230397973>')
-
-
-@client.command()
-async def ask(ctx, *, question='blank'):
-    responses = ['It is certain',
-                 'It is decidedly so',
-                 'Without a doubt',
-                 'Yes definitely',
-                 'You may rely on it',
-                 'As I see it, yes',
-                 'Most likely',
-                 'Outlook good',
-                 'yes',
-                 'Signs point to yes',
-                 'Reply hazy try again',
-                 'Ask again later',
-                 'Better not tell you now',
-                 'Cannot predict now',
-                 'Concentrate and ask again',
-                 'Do not count on it',
-                 'My reply is no',
-                 'My sources say no',
-                 'Outlook not so good',
-                 'Very doubtful']
-
-    if question == 'blank':
-        await ctx.send('Please ask a question')
-    else:
-        number = randint(0, len(responses) - 1)
-        await ctx.send(responses[number])
-
-
-@client.command()
 async def ping(ctx):
     await ctx.send(f'Pinged for {round(client.latency * 1000)}ms')
-
-
-@client.command()
-async def hi(ctx):
-    author = str(ctx.author)
-    await ctx.send(f'o/ {author[: -5]}')
-
-
-@client.command()
-async def say(ctx, *, statement):
-    await ctx.channel.purge(limit=1)
-    await ctx.send(statement)
-
-
-@client.command()
-async def loop(ctx, *, statement):
-    for i in range(5):
-        await ctx.send(statement)
 
 
 @client.command()
@@ -165,102 +106,13 @@ async def version(ctx):
 
 
 @client.command()
-async def poke(ctx):
-    if ctx.author.display_name != 'Bloatbot':
-        await ctx.send('*poke')
-
-
-@client.command()
-async def roll(ctx, *, arg='string'):
-    exists_arg = False
-
-    # Default to *roll 100
-    if arg == 'string':
-        maximum = 100
-    elif not arg.isdigit():
-        maximum = 100
-        exists_arg = True
-    else:
-        maximum = int(arg)
-
-    # Roll with the value given (inclusive)
-    max_range = int(maximum)
-    number = randint(1, max_range + 1)
-    if exists_arg:
-        await ctx.send(f'{arg}: {number}')
-    else:
-        await ctx.send(f'{number} points')
-
-
-@client.command()
-async def choose(ctx, *, arg='invalid'):
-    # Due for refactor/rewrite
-    choices = str.split(arg)
-    choice1 = ''
-    choice2 = ''
-    if 'or' in choices:
-        choice1_end = choices.index('or')
-        for i in range(choice1_end):
-            choice1 += choices[i] + ' '
-        for i in range(choice1_end + 1, len(choices)):
-            choice2 += choices[i] + ' '
-
-        random_choice = randint(1, 2)
-        if random_choice == 1:
-            await ctx.send(choice1)
-        else:
-            await ctx.send(choice2)
-    else:
-        await ctx.send('Proper format: *choose (choice 1) or (choice 2)')
-
-
-@client.command()
-async def poll(ctx, *, params):
-    poll_letters = '🇦🇧🇨🇩'
-
-    # Split based on quotes
-    double_quotes = '"' in params
-    if not double_quotes:
-        options = params.split("'")
-    else:
-        options = params.split('"')
-
-    for option in options:
-        if option == ' ':
-            options.remove(option)
-
-    # Remove question from options
-    options.pop(0)
-    question = options[0]
-    options.pop(0)
-    option_count = len(options)
-
-    # Add up all options to a single string
-    poll_options = ''
-    for i in range(option_count - 1):
-        if i == len(poll_letters):
-            break
-        poll_options += f'{poll_letters[i]} {options[i]}\n'
-
-    embed = discord.Embed(
-        title=question,
-        description=poll_options,
-        color=discord.Color.blue()
-    )
-
-    msg = await ctx.send(embed=embed)
-    for i in range(option_count - 1):
-        await msg.add_reaction(poll_letters[i])
-
-
-@client.command(alias=['inv'])
 async def invite(ctx):
     link = 'https://discord.com/api/oauth2/authorize?client_id=709553138977210381&permissions=1879960642&scope=bot'
     await ctx.send('Invite me to your server with this link: ' + link)
 
 
 # osu! API
-with open('osuAPI.pickle', 'rb') as fl:
+with open('Cogs/osuTools/osuAPI.pickle', 'rb') as fl:
     api_key = pickle.load(fl)
 
 

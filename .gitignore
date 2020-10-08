@@ -1,8 +1,9 @@
 venv/
 .idea/
 oppai-cache/
-osuAPI.pickle
+Cogs/osuTools/osuAPI.pickle
 token.txt
 testtoken.txt
 recentbeatmaps.json
 Bloatbot - Shortcut.lnk
+Cogs/CogTemplate.py

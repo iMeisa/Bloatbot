@@ -20,7 +20,7 @@ async def on_ready():
 
 
 # osu! API
-with open('osuAPI.pickle', 'rb') as fl:
+with open('Cogs/osuTools/osuAPI.pickle', 'rb') as fl:
     api_key = pickle.load(fl)
 
 
