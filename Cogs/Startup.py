@@ -9,7 +9,7 @@ class Startup(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        print('Bot is maybe ready')
+        print('Bloop bloop')
 
 
 def setup(client):
