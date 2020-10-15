@@ -180,14 +180,15 @@ def pp_calculation(map_id, mods=None, percentage=100.0, max_combo=None, miss_cou
     pp_data = subprocess.check_output(f'oppai ./Cogs/Tools/oppai-cache/{map_id}.osu {params}',
                                       shell=True).decode('UTF-8').split('\n')
     map_pp_data = pp_data[-3].split()
-    pp_total = map_pp_data[0]
+    pp_total = round(float(map_pp_data[0]))
     return pp_total
 
 
 def remove_param(user_string, param):
+    param_len = len(param) + 1
     if user_string.endswith(param):
-        return user_string[:-3]
-    return user_string[3:]
+        return user_string[:-param_len]
+    return user_string[param_len:]
 
 
 def create_play_embed(user, beatmap_id=None, channel_id=None, beatmap_only=False, show_all=False):

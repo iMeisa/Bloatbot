@@ -1,4 +1,4 @@
-import discord
+# import discord
 from discord.ext import commands
 from random import randint
 
@@ -9,7 +9,7 @@ class Ask(commands.Cog):
         self.client = client
 
     @commands.command()
-    async def ask(self, ctx, *, question='blank'):
+    async def ask(self, ctx, *, question=None):
         responses = ['It is certain',
                      'It is decidedly so',
                      'Without a doubt',
@@ -31,7 +31,7 @@ class Ask(commands.Cog):
                      'Outlook not so good',
                      'Very doubtful']
 
-        if question == 'blank':
+        if question is None:
             await ctx.send('Please ask a question')
         else:
             number = randint(0, len(responses) - 1)

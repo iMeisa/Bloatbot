@@ -2,9 +2,9 @@ from discord.ext import commands
 from random import randint
 import os
 
-with open('token.txt', 'r') as fl:
+with open('testtoken.txt', 'r') as fl:
     TOKEN = fl.read()
-client = commands.Bot(command_prefix='*')
+client = commands.Bot(command_prefix='b*')
 client.remove_command('help')
 
 for filename in os.listdir('./Cogs'):
@@ -71,11 +71,6 @@ async def on_message(message):
     if message.content.lower().endswith('beast'):
         if message.author.display_name != 'Bloatbot':
             await message.channel.send('BEAST')
-    if message.author.display_name == 'Aupsie' or message.content.lower() == 'oi':
-        if message.author.display_name != 'Bloatbot':
-            aupsie = randint(1, 1000) == 500
-            if aupsie:
-                await message.channel.send('oi')
 
     if '<:angryasfuk:756187172230397973>' in message.content or 'fuck' in message.content.lower():
         if message.author.display_name != 'Bloatbot':
