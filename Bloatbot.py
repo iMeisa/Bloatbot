@@ -2,9 +2,9 @@ from discord.ext import commands
 from random import randint
 import os
 
-with open('testtoken.txt', 'r') as fl:
+with open('token.txt', 'r') as fl:
     TOKEN = fl.read()
-client = commands.Bot(command_prefix='b*')
+client = commands.Bot(command_prefix='*')
 client.remove_command('help')
 
 for filename in os.listdir('./Cogs'):

@@ -19,12 +19,13 @@ class OsuStats(commands.Cog):
         username = user_data['username']
         user_url = 'https://osu.ppy.sh/u/' + user
         global_rank = user_data['pp_rank']
-        embed_title = 'Global Rank: ' + global_rank
+        pp_raw = user_data['pp_raw']
+        general_title = 'General Stats: '
+        general_stats = f'Global rank `{global_rank}`\nPP: `{pp_raw}`'
 
-        embed = discord.Embed(
-            title=embed_title
-        )
+        embed = discord.Embed()
 
+        embed.add_field(name=general_title, value=general_stats, inline=False)
         embed.set_author(name=username, icon_url=user_pfp, url=user_url)
 
         await ctx.send(embed=embed)
