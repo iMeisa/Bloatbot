@@ -1,3 +1,4 @@
+import discord
 from discord.ext import commands
 from random import randint
 import os
@@ -10,6 +11,12 @@ client.remove_command('help')
 for filename in os.listdir('./Cogs'):
     if filename.endswith('.py'):
         client.load_extension(f'Cogs.{filename[:-3]}')
+
+
+@client.event
+async def on_ready():
+    print('Bloop bloop')
+    await client.change_presence(status=discord.Status.online, activity=discord.Game('with dolphins'))
 
 bot_version = 'v1.7.2'
 
