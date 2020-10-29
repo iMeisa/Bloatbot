@@ -34,10 +34,10 @@ class Recent(commands.Cog):
 
         if isinstance(embed, str):
             await ctx.send(embed)
-            if praise is not None:
-                await ctx.send(praise)
         else:
             await ctx.send(embed=embed)
+            if praise is not None:
+                await ctx.send(praise)
 
 
 def setup(client):
