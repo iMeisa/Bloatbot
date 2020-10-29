@@ -427,4 +427,10 @@ def create_play_embed(user, beatmap_id=None, channel_id=None, beatmap_only=False
         embed.add_field(name='PP Values:', value=theoretical_pp, inline=True)
         embed.set_footer(text=mapper_details, icon_url=mapper_pfp)
 
-    return embed
+    praise = None
+    if beatmap['rank'] in ['S', 'SH']:
+        praise = 'Nice S'
+    elif beatmap['rank'] in ['SS', 'SSH']:
+        praise = 'Nice SS'
+
+    return embed, praise
