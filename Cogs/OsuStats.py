@@ -18,10 +18,10 @@ class OsuStats(commands.Cog):
         user_pfp = 'https://a.ppy.sh/' + user_data['user_id']
         username = user_data['username']
         user_url = 'https://osu.ppy.sh/u/' + user
-        global_rank = user_data['pp_rank']
-        pp_raw = user_data['pp_raw']
+        global_rank = int(user_data['pp_rank'])
+        pp_raw = int(user_data['pp_raw'])
         general_title = 'General Stats: '
-        general_stats = f'Global rank `{global_rank}`\nPP: `{pp_raw}`'
+        general_stats = f'Global rank `{global_rank:,}`\nPP: `{pp_raw:,}`'
 
         embed = discord.Embed()
 

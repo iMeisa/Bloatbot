@@ -191,7 +191,7 @@ def remove_param(user_string, param):
     return user_string[param_len:]
 
 
-def create_play_embed(user, beatmap_id=None, channel_id=None, beatmap_only=False, show_all=False):
+def create_play_embed(user, beatmap_id=None, channel_id=None, beatmap_only=False, show_all=False, mods=None):
     play_only = (beatmap_only + show_all) < 1  # True or False
 
     user_data = get_user_data(user)
@@ -236,6 +236,8 @@ def create_play_embed(user, beatmap_id=None, channel_id=None, beatmap_only=False
 
     # Mods
     enabled_mods = get_mods(beatmap['enabled_mods'])
+    if mods is not None:
+        enabled_mods = mods.upper()
 
     # Write data to file for *c
     if channel_id is not None:
@@ -358,6 +360,12 @@ def create_play_embed(user, beatmap_id=None, channel_id=None, beatmap_only=False
 
     # Calculate PP
     compressed_mods = get_mods(beatmap['enabled_mods'], separate=False)
+
+    if mods is not None:
+        compressed_mods = mods
+    elif beatmap_only:
+        compressed_mods = None
+
     pp_achieved = pp_calculation(beatmap_id, mods=compressed_mods, percentage=float(beatmap_acc),
                                  max_combo=beatmap['maxcombo'], miss_count=n0)
     pp_max = pp_calculation(beatmap_id, mods=compressed_mods)
@@ -411,10 +419,10 @@ def create_play_embed(user, beatmap_id=None, channel_id=None, beatmap_only=False
     elif beatmap['rank'] == 'D':
         embed.colour = discord.Color.red()
 
-    embed.set_author(name=user_title, icon_url=user_pfp, url=user_url)
     embed.set_image(url=beatmap_cover)
 
     if play_only or show_all:
+        embed.set_author(name=user_title, icon_url=user_pfp, url=user_url)
         embed.add_field(name=score_title, value=score_combo, inline=True)
         embed.add_field(name='Mods:', value=enabled_mods, inline=True)
         embed.add_field(name='PP:', value=pp_value, inline=True)

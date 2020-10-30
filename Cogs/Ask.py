@@ -1,6 +1,6 @@
 # import discord
 from discord.ext import commands
-from random import randint
+import random
 
 
 class Ask(commands.Cog):
@@ -34,8 +34,7 @@ class Ask(commands.Cog):
         if question is None:
             await ctx.send('Please ask a question')
         else:
-            number = randint(0, len(responses) - 1)
-            await ctx.send(responses[number])
+            await ctx.send(random.choice(responses))
 
 
 def setup(client):
