@@ -84,7 +84,7 @@ def get_mods(mod_id, separate=True):
 
 
 # Recalculation specific to TTT
-def mod_recalculate(score, mods):
+def ttt_mod_recalculate(score, mods):
     score = int(score)
 
     if mods in ['None', '']:
@@ -100,6 +100,60 @@ def mod_recalculate(score, mods):
         multiplier += 1.0
 
     return int(score * multiplier)
+
+
+def mod_recalculate(cs, ar, od, hp, bpm, beatmap, mods):
+    time = f'{beatmap["total_length"] (beatmap["hit_length"])}'
+    if 'HR' in mods:
+        cs *= 1.3
+        cs = round(cs, 2)
+
+        ar *= 1.4
+        ar = round(ar, 2)
+        if ar > 10:
+            ar = 10
+
+        od *= 1.4
+        od = round(od, 2)
+        if od > 10:
+            od = 10
+
+        hp *= 1.4
+        hp = round(hp, 2)
+        if hp > 10:
+            hp = 10
+
+    elif 'EZ' in mods:
+        cs /= 2
+        ar /= 2
+        od /= 2
+        hp /= 2
+
+    if 'DT' in mods:
+        ar = str(ar) + '+'
+        od = str(od) + '+'
+        hp = str(hp) + '+'
+
+        # BPM and Time recalculation
+        bpm = bpm * 1.5
+
+        time_total = sec_to_min(float(beatmap['total_length']) * 0.6666)
+        time_drain = sec_to_min(float(beatmap['hit_length']) * 0.6666)
+        time = f'{time_total} ({time_drain})'
+
+    elif 'HT' in mods:
+        ar = str(ar) + '-'
+        od = str(od) + '-'
+        hp = str(hp) + '-'
+
+        # BPM and Time recalculation
+        bpm = bpm * 0.6666
+
+        time_total = sec_to_min(float(beatmap['total_length']) * 1.5)
+        time_drain = sec_to_min(float(beatmap['hit_length']) * 1.5)
+        time = f'{time_total} ({time_drain})'
+
+    return cs, ar, od, hp, bpm, time
 
 
 def get_time_diff(time_origin):
@@ -191,6 +245,41 @@ def remove_param(user_string, param):
     return user_string[param_len:]
 
 
+def rank_emoji(rank_status):
+    approve_status = 'last_updated'
+    if rank_status == '4':
+        approve_status = 'loved'
+        rank_status = ':heart:'
+    elif rank_status in ['3', '2']:
+        approve_status = 'qualified'
+        rank_status = ':white_check_mark:'
+    elif rank_status == '1':
+        approve_status = 'ranked'
+        rank_status = ':arrow_double_up:'
+    elif rank_status == '0':
+        rank_status = ':clock3:'
+    elif rank_status == '-1':
+        rank_status = ':tools:'
+    else:
+        rank_status = ':pirate_flag:'
+        
+    return rank_status, approve_status
+
+
+def pass_amount(rank, beatmap_only, beatmap_data, n0, n50, n100, n300):
+    if rank == 'F' and not beatmap_only:
+        circles = int(beatmap_data['count_normal'])
+        sliders = int(beatmap_data['count_slider'])
+        spinners = int(beatmap_data['count_spinner'])
+
+        object_count = circles + sliders + spinners
+        objects_hit = n0 + n50 + n100 + n300
+        percentage = f'({str(int(objects_hit / object_count * 100))[:5]}% through)'
+
+        return percentage
+    return ''
+
+
 def create_play_embed(user, beatmap_id=None, channel_id=None, beatmap_only=False, show_all=False, mods=None):
     play_only = (beatmap_only + show_all) < 1  # True or False
 
@@ -249,26 +338,9 @@ def create_play_embed(user, beatmap_id=None, channel_id=None, beatmap_only=False
             json.dump(recent_beatmaps, f)
 
     # Determine rank status
-    beatmap_rank_status = beatmap_data['approved']
-    approve_status = 'last_updated'
-    if beatmap_rank_status == '4':
-        approve_status = 'loved'
-        rank_status = ':heart:'
-    elif beatmap_rank_status in ['3', '2']:
-        approve_status = 'qualified'
-        rank_status = ':white_check_mark:'
-    elif beatmap_rank_status == '1':
-        approve_status = 'ranked'
-        rank_status = ':arrow_double_up:'
-    elif beatmap_rank_status == '0':
-        rank_status = ':clock3:'
-    elif beatmap_rank_status == '-1':
-        rank_status = ':tools:'
-    else:
-        rank_status = ':pirate_flag:'
+    rank_status, approve_status = rank_emoji(beatmap_data['approved'])
 
     # Beatmap details
-    beatmap_time = f'{sec_to_min(beatmap_data["total_length"])} ({sec_to_min(beatmap_data["hit_length"])})'
     beatmap_bpm = float(beatmap_data['bpm'])
     beatmap_max_combo = beatmap_data['max_combo']
     beatmap_cs = float(beatmap_data['diff_size'])
@@ -289,53 +361,7 @@ def create_play_embed(user, beatmap_id=None, channel_id=None, beatmap_only=False
     mapper_pfp = 'https://a.ppy.sh/' + mapper_id
 
     # Mod difficulty recalculation
-    if 'HR' in enabled_mods:
-        beatmap_cs *= 1.3
-        beatmap_cs = round(beatmap_cs, 2)
-
-        beatmap_ar *= 1.4
-        beatmap_ar = round(beatmap_ar, 2)
-        if beatmap_ar > 10:
-            beatmap_ar = 10
-
-        beatmap_od *= 1.4
-        beatmap_od = round(beatmap_od, 2)
-        if beatmap_od > 10:
-            beatmap_od = 10
-
-        beatmap_hp *= 1.4
-        beatmap_hp = round(beatmap_hp, 2)
-        if beatmap_hp > 10:
-            beatmap_hp = 10
-
-    elif 'EZ' in enabled_mods:
-        beatmap_cs /= 2
-        beatmap_ar /= 2
-        beatmap_od /= 2
-        beatmap_hp /= 2
-    if 'DT' in enabled_mods:
-        beatmap_ar = str(beatmap_ar) + '+'
-        beatmap_od = str(beatmap_od) + '+'
-        beatmap_hp = str(beatmap_hp) + '+'
-
-        # BPM and Time recalculation
-        beatmap_bpm = beatmap_bpm * 1.5
-
-        time_total = sec_to_min(float(beatmap_data['total_length']) * 0.6666)
-        time_drain = sec_to_min(float(beatmap_data['hit_length']) * 0.6666)
-        beatmap_time = f'{time_total} ({time_drain})'
-
-    elif 'HT' in enabled_mods:
-        beatmap_ar = str(beatmap_ar) + '-'
-        beatmap_od = str(beatmap_od) + '-'
-        beatmap_hp = str(beatmap_hp) + '-'
-
-        # BPM and Time recalculation
-        beatmap_bpm = beatmap_bpm * 0.6666
-
-        time_total = sec_to_min(float(beatmap_data['total_length']) * 1.5)
-        time_drain = sec_to_min(float(beatmap_data['hit_length']) * 1.5)
-        beatmap_time = f'{time_total} ({time_drain})'
+    beatmap_cs, beatmap_ar, beatmap_od, beatmap_hp, beatmap_bpm, beatmap_time = mod_recalculate(beatmap_cs, beatmap_ar, beatmap_od, beatmap_hp, beatmap_bpm, beatmap_data, enabled_mods)
 
     beatmap_difficulty = f'CS: `{beatmap_cs}` AR: `{beatmap_ar}`\n' \
                          f'OD: `{beatmap_od}` HP: `{beatmap_hp}`'
@@ -372,7 +398,7 @@ def create_play_embed(user, beatmap_id=None, channel_id=None, beatmap_only=False
 
     if beatmap['rank'] == 'F':
         pp_value = f'~~**{pp_achieved}pp**/{pp_max}PP~~'
-    elif beatmap_rank_status in ['2', '1']:
+    elif beatmap_data['approved'] in ['2', '1']:
         pp_value = f'**{pp_achieved}pp**/{pp_max}PP'
     else:
         pp_value = f'~~**{pp_achieved}pp**/{pp_max}PP~~'
@@ -385,15 +411,7 @@ def create_play_embed(user, beatmap_id=None, channel_id=None, beatmap_only=False
     theoretical_pp = f'95%: `{pp_95}pp`\n98%: `{pp_98}pp`\n99%: `{pp_99}pp`\n100%: `{pp_max}pp`'
 
     # Calculate map progress if failed
-    pass_percentage = ''
-    if beatmap['rank'] == 'F' and not beatmap_only:
-        circles = int(beatmap_data['count_normal'])
-        sliders = int(beatmap_data['count_slider'])
-        spinners = int(beatmap_data['count_spinner'])
-
-        object_count = circles + sliders + spinners
-        objects_hit = n0 + n50 + n100 + n300
-        pass_percentage = f'({str(int(objects_hit / object_count * 100))[:5]}% through)'
+    pass_percentage = pass_amount(beatmap['rank'], beatmap_only, beatmap_data, n0, n50, n100, n300)
 
     # Create embed
     embed = discord.Embed(

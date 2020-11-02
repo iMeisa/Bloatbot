@@ -74,8 +74,8 @@ class TTT(commands.Cog):
             if free_mod:
                 player1_mods = osu.get_mods(score1['enabled_mods'], separate=False)
                 player2_mods = osu.get_mods(score2['enabled_mods'], separate=False)
-                player1_score = osu.mod_recalculate(player1_score, player1_mods)
-                player2_score = osu.mod_recalculate(player2_score, player2_mods)
+                player1_score = osu.ttt_mod_recalculate(player1_score, player1_mods)
+                player2_score = osu.ttt_mod_recalculate(player2_score, player2_mods)
 
             # Cache usernames
             if user_id1 not in player_scores:
