@@ -309,8 +309,8 @@ def create_play_embed(user, beatmap_id=None, channel_id=None, beatmap_only=False
     # If received None
     if len(user_play_data) < 1:
         if channel_id is not None:
-            return f"{user} hasn't clicked circles in a while"
-        return f"{user} hasn't passed this map yet"
+            return f"{user} hasn't clicked circles in a while", None
+        return f"{user} hasn't passed this map yet", None
 
     # Assign beatmap data variable constants
     beatmap = user_play_data[0]
@@ -328,14 +328,13 @@ def create_play_embed(user, beatmap_id=None, channel_id=None, beatmap_only=False
     if mods is not None:
         enabled_mods = mods.upper()
 
-    # Write data to file for *c
-    if channel_id is not None:
-        with open('./Cogs/Tools/recentbeatmaps.json', 'r') as f:
-            recent_beatmaps = json.load(f)
+    # Save most recent beatmap id
+    with open('./Cogs/Tools/recentbeatmaps.json', 'r') as f:
+        recent_beatmaps = json.load(f)
 
-        recent_beatmaps[str(channel_id)] = beatmap['beatmap_id']
-        with open('./Cogs/Tools/recentbeatmaps.json', 'w') as f:
-            json.dump(recent_beatmaps, f)
+    recent_beatmaps[str(channel_id)] = beatmap_id
+    with open('./Cogs/Tools/recentbeatmaps.json', 'w') as f:
+        json.dump(recent_beatmaps, f)
 
     # Determine rank status
     rank_status, approve_status = rank_emoji(beatmap_data['approved'])
@@ -454,9 +453,18 @@ def create_play_embed(user, beatmap_id=None, channel_id=None, beatmap_only=False
         embed.set_footer(text=mapper_details, icon_url=mapper_pfp)
 
     praise = None
-    if beatmap['rank'] in ['S', 'SH']:
-        praise = 'Nice S'
-    elif beatmap['rank'] in ['SS', 'SSH']:
-        praise = 'Nice SS'
+    if not beatmap_only:
+        if beatmap['rank'] in ['S', 'SH']:
+            praise = 'Nice S'
+        elif beatmap['rank'] in ['SS', 'SSH']:
+            praise = 'Nice SS'
 
     return embed, praise
+
+
+def present_beatmap(user, channel_id, beatmap_url):
+    beatmap_id = beatmap_url.split('/')[-1]
+
+    embed = create_play_embed(user, channel_id=channel_id, beatmap_id=beatmap_id, beatmap_only=True)
+
+    return embed
