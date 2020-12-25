@@ -28,15 +28,12 @@ class Recent(commands.Cog):
             beatmap_only = True
             user = check_given_user(osu.remove_param(user_param, '-b'))
 
-        embed, praise = osu.create_play_embed(user, channel_id=ctx.channel.id,
-                                              beatmap_only=beatmap_only, show_all=show_all)
+        embed = osu.create_play_embed(user, channel_id=ctx.channel.id, beatmap_only=beatmap_only, show_all=show_all)
 
         if isinstance(embed, str):
             await ctx.send(embed)
         else:
             await ctx.send(embed=embed)
-            if praise is not None:
-                await ctx.send(praise)
 
 
 def setup(client):

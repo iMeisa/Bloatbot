@@ -24,7 +24,7 @@ class Compare(commands.Cog):
 
         beatmap_id = recent_beatmaps[channel_id]
 
-        embed, praise = osu.create_play_embed(user, beatmap_id=beatmap_id, channel_id=channel_id)
+        embed = osu.create_play_embed(user, beatmap_id=beatmap_id, channel_id=channel_id)
 
         if isinstance(embed, str):
             await ctx.send(embed)

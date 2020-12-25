@@ -21,8 +21,7 @@ class PlusMods(commands.Cog):
 
         beatmap_id = recent_beatmaps[channel_id]
 
-        embed, praise = osu.create_play_embed(user=ctx.author.display_name, beatmap_id=beatmap_id,
-                                              beatmap_only=True, mods=mods)
+        embed = osu.create_play_embed(user=ctx.author.display_name, beatmap_id=beatmap_id, beatmap_only=True, mods=mods)
 
         if isinstance(embed, str):
             await ctx.send(embed)

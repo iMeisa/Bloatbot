@@ -309,8 +309,8 @@ def create_play_embed(user, beatmap_id=None, channel_id=None, beatmap_only=False
     # If received None
     if len(user_play_data) < 1:
         if channel_id is not None:
-            return f"{user} hasn't clicked circles in a while", None
-        return f"{user} hasn't passed this map yet", None
+            return f"{user} hasn't passed this map yet"
+        return f"{user} hasn't clicked circles in a while"
 
     # Assign beatmap data variable constants
     beatmap = user_play_data[0]
@@ -452,14 +452,7 @@ def create_play_embed(user, beatmap_id=None, channel_id=None, beatmap_only=False
         embed.add_field(name='PP Values:', value=theoretical_pp, inline=True)
         embed.set_footer(text=mapper_details, icon_url=mapper_pfp)
 
-    praise = None
-    if not beatmap_only:
-        if beatmap['rank'] in ['S', 'SH']:
-            praise = 'Nice S'
-        elif beatmap['rank'] in ['SS', 'SSH']:
-            praise = 'Nice SS'
-
-    return embed, praise
+    return embed
 
 
 def present_beatmap(user, channel_id, beatmap_url):
