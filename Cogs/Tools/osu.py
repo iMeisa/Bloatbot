@@ -103,7 +103,7 @@ def ttt_mod_recalculate(score, mods):
 
 
 def mod_recalculate(cs, ar, od, hp, bpm, beatmap, mods):
-    time = f'{beatmap["total_length"]} ({beatmap["hit_length"]})'
+    time = f'{sec_to_min(beatmap["total_length"])} ({sec_to_min(beatmap["hit_length"])})'
     if 'HR' in mods:
         cs *= 1.3
         cs = round(cs, 2)
