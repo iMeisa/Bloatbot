@@ -8,7 +8,7 @@ class SomeClassName(commands.Cog):
 
     @commands.command()
     async def bug(self, ctx):
-        ctx.send("If you have found a bug, please report it here: https://github.com/iMeisa/Bloatbot/issues/new")
+        await ctx.send("If you have found a bug, please report it here: https://github.com/iMeisa/Bloatbot/issues/new")
 
 
 def setup(client):
