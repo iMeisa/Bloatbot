@@ -3,7 +3,7 @@ venv/
 keys/token.txt
 testtoken.txt
 keys/osuAPI.pickle
-cache/recentbeatmaps.json
+cache/*
 Bloatbot - Shortcut.lnk
 Cogs/CogTemplate.py
 oppai_cache/*
