@@ -11,11 +11,11 @@ class Register(commands.Cog):
 
     @commands.command()
     async def register(self, ctx, osu_name):
-        author = ctx.author.id
+        author = str(ctx.author.id)
 
         with open('cache/users.json', 'r') as f:
             users = json.load(f)
-        if author in users.keys():
+        if author in list(users.keys()):
             await ctx.send('You are already registered')
             return
 
