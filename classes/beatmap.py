@@ -45,4 +45,4 @@ class Beatmap:
         self.max_combo = int(beatmap_data['max_combo'])
         self.diff_aim = float(beatmap_data['diff_aim'])
         self.diff_speed = float(beatmap_data['diff_speed'])
-        self.sr = float(beatmap_data['difficultyrating'])
+        self.sr = f'{float(beatmap_data["difficultyrating"]):.2f}'
