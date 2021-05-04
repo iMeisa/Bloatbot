@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 import pickle
 from urllib.parse import urlencode
-from Cogs.Tools import osu
+from util import osu
 
 
 class TTT(commands.Cog):
@@ -13,7 +13,7 @@ class TTT(commands.Cog):
     @commands.command()
     async def ttt(self, ctx, *, params=''):
 
-        with open('Cogs/Tools/osuAPI.pickle', 'rb') as fl:
+        with open('lib/osuAPI.pickle', 'rb') as fl:
             api_key = pickle.load(fl)
 
         # Separate comments from params
@@ -40,7 +40,7 @@ class TTT(commands.Cog):
 
         # Get mappool from file
         mappool = {}
-        with open('Cogs/Tools/tttmappool.txt', 'r') as f:
+        with open('Cogs/lib/tttmappool.txt', 'r') as f:
             mappool_raw = f.read().split('\n')
             for beatmap in mappool_raw:
                 beatmap_pool_id = beatmap.split(' ')

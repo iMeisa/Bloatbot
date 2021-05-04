@@ -1,6 +1,6 @@
 from discord.ext import commands
 import json
-from Cogs.Tools import osu
+from util import osu
 
 
 class Compare(commands.Cog):
@@ -13,7 +13,7 @@ class Compare(commands.Cog):
         if len(user) < 3:
             user = ctx.author.display_name
 
-        with open('Cogs/Tools/recentbeatmaps.json', 'r') as f:
+        with open('lib/recentbeatmaps.json', 'r') as f:
             recent_beatmaps = json.load(f)
 
         # Check if *r was used in the channel

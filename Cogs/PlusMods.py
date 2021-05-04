@@ -1,6 +1,6 @@
 from discord.ext import commands
 import json
-from Cogs.Tools import osu
+from util import osu
 
 
 class PlusMods(commands.Cog):
@@ -10,7 +10,7 @@ class PlusMods(commands.Cog):
 
     @commands.command()
     async def m(self, ctx, mods):
-        with open('Cogs/Tools/recentbeatmaps.json', 'r') as f:
+        with open('lib/recentbeatmaps.json', 'r') as f:
             recent_beatmaps = json.load(f)
 
         # Check if *r was used in the channel
