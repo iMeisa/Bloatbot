@@ -2,7 +2,7 @@ import os
 import subprocess
 
 
-def get_mods(mod_id, separate=True):
+def get_mods(mod_id: int, separate: bool = True) -> str:
     if mod_id is None or mod_id == '0':
         return 'None'
 
@@ -31,7 +31,7 @@ def get_mods(mod_id, separate=True):
     return used_mods
 
 
-def oppai(map_id, *, params):
+def oppai(map_id, *, params) -> list:
     if not os.path.isfile(f'oppai_cache/{map_id}.osu'):
         os.system(f'curl https://osu.ppy.sh/osu/{map_id} > oppai_cache/{map_id}.osu')
 
@@ -41,7 +41,7 @@ def oppai(map_id, *, params):
     return oppai_data
 
 
-def pp_calculation(map_id, mods=None, percentage=100.0, max_combo=None, miss_count=0):
+def pp_calculation(map_id, mods=None, percentage=100.0, max_combo=None, miss_count=0) -> int:
 
     params = ''
     if mods is not None:
@@ -59,29 +59,29 @@ def pp_calculation(map_id, mods=None, percentage=100.0, max_combo=None, miss_cou
     return pp_total
 
 
-def get_acc(n0, n50, n100, n300):
+def get_acc(n0: int, n50: int, n100: int, n300: int) -> str:
     note_hit_count = (50 * n50) + (100 * n100) + (300 * n300)
     note_total = 300 * (n0 + n50 + n100 + n300)
-    raw_acc = round((note_hit_count / note_total) * 10000)
-    beatmap_acc = str(raw_acc / 100)
+    raw_acc = round((note_hit_count / note_total) * 100)
+    beatmap_acc = raw_acc / 100
 
-    return beatmap_acc[:5]
+    return f'{beatmap_acc:.2f}%'
 
 
-def rank_emoji(rank_status):
+def rank_emoji(rank_status: int) -> (str, str):
     approve_status = 'last_updated'
-    if rank_status == '4':
+    if rank_status == 4:
         approve_status = 'loved'
         rank_status = ':heart:'
-    elif rank_status in ['3', '2']:
+    elif rank_status in [3, 2]:
         approve_status = 'qualified'
         rank_status = ':white_check_mark:'
-    elif rank_status == '1':
+    elif rank_status == 1:
         approve_status = 'ranked'
         rank_status = ':arrow_double_up:'
-    elif rank_status == '0':
+    elif rank_status == 0:
         rank_status = ':clock3:'
-    elif rank_status == '-1':
+    elif rank_status == -1:
         rank_status = ':tools:'
     else:
         rank_status = ':pirate_flag:'
@@ -89,7 +89,7 @@ def rank_emoji(rank_status):
     return rank_status, approve_status
 
 
-def pass_amount(rank, beatmap_only, beatmap_data, n0, n50, n100, n300):
+def pass_amount(rank, beatmap_only, beatmap_data, n0, n50, n100, n300) -> str:
     if rank == 'F' and not beatmap_only:
         circles = int(beatmap_data['count_normal'])
         sliders = int(beatmap_data['count_slider'])

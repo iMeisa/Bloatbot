@@ -1,5 +1,4 @@
 class User:
-
     def __init__(self, user_data: dict):
         self.user_id = user_data['user_id']
         self.username = user_data['username']
@@ -12,12 +11,12 @@ class User:
         self.total_score = user_data['total_score']
         self.global_rank = user_data['pp_rank']
         self.acc = float(user_data['accuracy'])
-        self.count_rank_ss = user_data['count_rank_ss']
-        self.count_rank_ssh = user_data['count_rank_ssh']
-        self.count_rank_s = user_data['count_rank_s']
-        self.count_rank_sh = user_data['count_rank_sh']
-        self.count_rank_a = user_data['count_rank_a']
+        self.count_rank_ss = int(user_data['count_rank_ss'])
+        self.count_rank_ssh = int(user_data['count_rank_ssh'])
+        self.count_rank_s = int(user_data['count_rank_s'])
+        self.count_rank_sh = int(user_data['count_rank_sh'])
+        self.count_rank_a = int(user_data['count_rank_a'])
         self.country = user_data['country']
-        self.total_seconds_played = user_data['total_seconds_played']
+        self.total_seconds_played = int(user_data['total_seconds_played'])
         self.country_rank = user_data['pp_country_rank']
         self.events = user_data['events']

@@ -1,21 +1,24 @@
-class Beatmap:
+from util.osu_tools import rank_emoji
 
+
+class Beatmap:
     def __init__(self, beatmap_data: dict):
         self.set_id = beatmap_data['beatmapset_id']
         self.id = beatmap_data['beatmap_id']
-        self.approved = beatmap_data['approved']
-        self.total_length = beatmap_data['total_length']
-        self.hit_length = beatmap_data['hit_length']
+        self.approved = int(beatmap_data['approved'])
+        self.approved_emoji, self.approved_status = rank_emoji(self.approved)
+        self.total_length = int(beatmap_data['total_length'])
+        self.hit_length = int(beatmap_data['hit_length'])
         self.version = beatmap_data['version']
         self.file_md5 = beatmap_data['file_md5']
-        self.cs = beatmap_data['diff_size']
-        self.od = beatmap_data['diff_overall']
-        self.ar = beatmap_data['diff_approach']
-        self.hp = beatmap_data['diff_drain']
-        self.mode = beatmap_data['mode']
-        self.circle_count = beatmap_data['count_normal']
-        self.slider_count = beatmap_data['count_slider']
-        self.spinner_count = beatmap_data['count_spinner']
+        self.cs = float(beatmap_data['diff_size'])
+        self.od = float(beatmap_data['diff_overall'])
+        self.ar = float(beatmap_data['diff_approach'])
+        self.hp = float(beatmap_data['diff_drain'])
+        self.game_mode = int(beatmap_data['mode'])
+        self.circle_count = int(beatmap_data['count_normal'])
+        self.slider_count = int(beatmap_data['count_slider'])
+        self.spinner_count = int(beatmap_data['count_spinner'])
         self.submit_date = beatmap_data['submit_date']
         self.approved_date = beatmap_data['approved_date']
         self.last_update = beatmap_data['last_update']
@@ -30,8 +33,7 @@ class Beatmap:
         self.tags = beatmap_data['tags'].split()
         self.genre_id = beatmap_data['genre_id']
         self.language_id = beatmap_data['language_id']
-        self.favorite_count = beatmap_data['favourite_count']
-        self.favourite_count = beatmap_data['favourite_count']
+        self.favorite_count = self.favourite_count = int(beatmap_data['favourite_count'])
         self.rating = float(beatmap_data['rating'])
         self.storyboard = beatmap_data['storyboard'] == '1'
         self.video = beatmap_data['video'] == '1'

@@ -1,4 +1,6 @@
 import json
+
+import discord
 from discord.ext import commands
 from util.osu_api import get_beatmap
 
@@ -22,6 +24,10 @@ class BeatmapDetails(commands.Cog):
             map_id = recent_beatmaps[channel_id]
 
         beatmap = get_beatmap(beatmap_id=map_id)
+
+        embed = discord.Embed(
+
+        )
 
         await ctx.send(beatmap.title)
 
