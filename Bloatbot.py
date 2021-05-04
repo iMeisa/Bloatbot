@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 import os
 
-with open('lib/token.txt', 'r') as fl:
+with open('keys/token.txt', 'r') as fl:
     TOKEN = fl.read()
 client = commands.Bot(command_prefix='*')
 client.remove_command('help')

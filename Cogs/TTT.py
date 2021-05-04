@@ -13,7 +13,7 @@ class TTT(commands.Cog):
     @commands.command()
     async def ttt(self, ctx, *, params=''):
 
-        with open('lib/osuAPI.pickle', 'rb') as fl:
+        with open('keys/osuAPI.pickle', 'rb') as fl:
             api_key = pickle.load(fl)
 
         # Separate comments from params

@@ -9,7 +9,7 @@ import subprocess
 import discord
 
 # osu! API
-with open('lib/osuAPI.pickle', 'rb') as fl:
+with open('keys/osuAPI.pickle', 'rb') as fl:
     api_key = pickle.load(fl)
 
 
@@ -329,11 +329,11 @@ def create_play_embed(user, beatmap_id=None, channel_id=None, beatmap_only=False
         enabled_mods = mods.upper()
 
     # Save most recent beatmap id
-    with open('lib/recentbeatmaps.json', 'r') as f:
+    with open('cache/recentbeatmaps.json', 'r') as f:
         recent_beatmaps = json.load(f)
 
     recent_beatmaps[str(channel_id)] = beatmap_id
-    with open('lib/recentbeatmaps.json', 'w') as f:
+    with open('cache/recentbeatmaps.json', 'w') as f:
         json.dump(recent_beatmaps, f)
 
     # Determine rank status
