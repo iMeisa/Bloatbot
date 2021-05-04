@@ -40,7 +40,7 @@ class TTT(commands.Cog):
 
         # Get mappool from file
         mappool = {}
-        with open('Cogs/lib/tttmappool.txt', 'r') as f:
+        with open('cogs/lib/tttmappool.txt', 'r') as f:
             mappool_raw = f.read().split('\n')
             for beatmap in mappool_raw:
                 beatmap_pool_id = beatmap.split(' ')

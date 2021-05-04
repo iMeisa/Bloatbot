@@ -7,9 +7,9 @@ with open('keys/token.txt', 'r') as fl:
 client = commands.Bot(command_prefix='*')
 client.remove_command('help')
 
-for filename in os.listdir('./Cogs'):
+for filename in os.listdir('cogs'):
     if filename.endswith('.py'):
-        client.load_extension(f'Cogs.{filename[:-3]}')
+        client.load_extension(f'cogs.{filename[:-3]}')
 
 
 @client.event
@@ -17,7 +17,7 @@ async def on_ready():
     print('Bloop bloop')
     await client.change_presence(status=discord.Status.online, activity=discord.Game('with dolphins'))
 
-bot_version = 'v1.7.2'
+bot_version = 'v2.0-beta'
 
 
 @client.event

@@ -5,5 +5,5 @@ testtoken.txt
 keys/osuAPI.pickle
 cache/*
 Bloatbot - Shortcut.lnk
-Cogs/CogTemplate.py
+cogs/CogTemplate.py
 oppai_cache/*
