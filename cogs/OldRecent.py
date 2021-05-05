@@ -8,7 +8,7 @@ class Recent(commands.Cog):
         self.client = client
 
     @commands.command()
-    async def r(self, ctx, *, user_param=''):
+    async def rr(self, ctx, *, user_param=''):
         # Check if username is given
         def check_given_user(username):
             if len(username) < 3:

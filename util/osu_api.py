@@ -5,10 +5,11 @@ from urllib.parse import urlencode
 import json
 
 from classes.beatmap import Beatmap
+from classes.score import Score
 from classes.user import User
 
 # osu! API key
-from util.osu_tools import get_mods
+from util.osu_tools import get_mods, get_api_mods
 
 with open('keys/osuAPI.pickle', 'rb') as fl:
     API_KEY = pickle.load(fl)
@@ -22,8 +23,9 @@ def call_api(url_param) -> dict:
     return json.load(resp)
 
 
-def get_user_data(username) -> User:
-    query = urlencode({'k': API_KEY, 'u': username})
+def get_user(username, is_id=False) -> User:
+    name_type = 'string' if not is_id else 'id'
+    query = urlencode({'k': API_KEY, 'u': username, 'type': name_type})
     user_url = 'get_user' + '?' + query
     user_data = call_api(user_url)[0]
 
@@ -31,20 +33,24 @@ def get_user_data(username) -> User:
 
 
 def get_beatmap(beatmap_id, mod_bytes_raw=0) -> Beatmap:
-    current_mods = get_mods(mod_bytes_raw, separate=False)
-    acceptable_mods = {'EZ': 2, 'HR': 16, 'DT': 64, 'HT': 256, 'NC': 64}
-
-    mods = 0
-
-    for mod in acceptable_mods:
-        if mod in current_mods:
-            mods += acceptable_mods[mod]
+    mods = get_api_mods(mod_bytes_raw)
 
     query = urlencode({'k': API_KEY, 'b': beatmap_id, 'mods': mods})
     beatmap_url = 'get_beatmaps' + '?' + query
     beatmap_data = call_api(beatmap_url)[0]
 
     return Beatmap(beatmap_data)
+
+
+def get_recent_play(osu_id, osu_id_type='id'):
+    query = urlencode({'k': API_KEY, 'u': osu_id, 'type': osu_id_type, 'limit': 1})
+    url = 'get_user_recent' + '?' + query
+    scores = call_api(url)
+
+    if len(scores) < 1:
+        return None
+
+    return Score(scores[0])
 
 
 

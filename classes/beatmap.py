@@ -5,6 +5,8 @@ class Beatmap:
     def __init__(self, beatmap_data: dict):
         self.set_id = beatmap_data['beatmapset_id']
         self.id = beatmap_data['beatmap_id']
+        self.url = 'https://osu.ppy.sh/b/' + self.id
+        self.cover_url = 'https://assets.ppy.sh/beatmaps/' + self.set_id + '/covers/cover.jpg'
         self.approved = int(beatmap_data['approved'])
         self.approved_emoji, self.approved_status = rank_emoji(self.approved)
         self.total_length = int(beatmap_data['total_length'])

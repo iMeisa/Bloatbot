@@ -1,7 +1,7 @@
 import json
 
 from discord.ext import commands
-from util import osu_api
+from util.osu_api import get_user
 
 
 class Register(commands.Cog):
@@ -19,8 +19,8 @@ class Register(commands.Cog):
             await ctx.send('You are already registered')
             return
 
-        user = osu_api.get_user_data(osu_name)
-        users[author] = user.user_id
+        user = get_user(osu_name)
+        users[author] = user.id
 
         with open('cache/users.json', 'w') as f:
             json.dump(users, f)

@@ -1,3 +1,4 @@
+import json
 import os
 import subprocess
 
@@ -41,14 +42,15 @@ def oppai(map_id, *, params) -> list:
     return oppai_data
 
 
-def pp_calculation(map_id, mods=None, percentage=100.0, max_combo=None, miss_count=0) -> int:
+def pp_calculation(map_id, mods: str = None, percentage: float = 100.0, max_combo: int = 0, miss_count: int = 0) -> int:
+    mods = mods if mods is not None else 'None'
 
     params = ''
-    if mods is not None:
+    if mods != 'None':
         params += ' +' + mods
     if percentage < 100:
         params += f' {percentage}%'
-    if max_combo is not None:
+    if max_combo > 0:
         params += f' {max_combo}x'
     if miss_count > 0:
         params += f' {miss_count}m'
@@ -62,10 +64,9 @@ def pp_calculation(map_id, mods=None, percentage=100.0, max_combo=None, miss_cou
 def get_acc(n0: int, n50: int, n100: int, n300: int) -> str:
     note_hit_count = (50 * n50) + (100 * n100) + (300 * n300)
     note_total = 300 * (n0 + n50 + n100 + n300)
-    raw_acc = round((note_hit_count / note_total) * 100)
-    beatmap_acc = raw_acc / 100
+    raw_acc = (note_hit_count / note_total) * 100
 
-    return f'{beatmap_acc:.2f}%'
+    return f'{raw_acc:.2f}%'
 
 
 def rank_emoji(rank_status: int) -> (str, str):
@@ -89,15 +90,38 @@ def rank_emoji(rank_status: int) -> (str, str):
     return rank_status, approve_status
 
 
-def pass_amount(rank, beatmap_only, beatmap_data, n0, n50, n100, n300) -> str:
-    if rank == 'F' and not beatmap_only:
-        circles = int(beatmap_data['count_normal'])
-        sliders = int(beatmap_data['count_slider'])
-        spinners = int(beatmap_data['count_spinner'])
+# def pass_amount(rank, beatmap_only, beatmap_data, n0, n50, n100, n300) -> str:
+#     if rank == 'F' and not beatmap_only:
+#         circles = int(beatmap_data['count_normal'])
+#         sliders = int(beatmap_data['count_slider'])
+#         spinners = int(beatmap_data['count_spinner'])
+#
+#         object_count = circles + sliders + spinners
+#         objects_hit = n0 + n50 + n100 + n300
+#         percentage = f'({str(int(objects_hit / object_count * 100))[:5]}% through)'
+#
+#         return percentage
+#     return ''
 
-        object_count = circles + sliders + spinners
-        objects_hit = n0 + n50 + n100 + n300
-        percentage = f'({str(int(objects_hit / object_count * 100))[:5]}% through)'
 
-        return percentage
-    return ''
+def get_api_mods(mod_bytes_raw) -> int:
+    current_mods = get_mods(mod_bytes_raw, separate=False)
+    acceptable_mods = {'EZ': 2, 'HR': 16, 'DT': 64, 'HT': 256, 'NC': 64}
+
+    mods = 0
+
+    for mod in acceptable_mods:
+        if mod in current_mods:
+            mods += acceptable_mods[mod]
+
+    return mods
+
+
+def add_recent_beatmap(channel_id: str, beatmap_id: str):
+    with open('cache/recentbeatmaps.json', 'r') as f:
+        recent_beatmaps = json.load(f)
+
+    recent_beatmaps[str(channel_id)] = beatmap_id
+
+    with open('cache/recentbeatmaps.json', 'w') as f:
+        json.dump(recent_beatmaps, f)

@@ -13,17 +13,15 @@ class BeatmapDetails(commands.Cog):
         self.client = client
 
     @commands.command()
-    async def b(self, ctx, *, args=None):
+    async def b(self, ctx, *args):
         map_id = None
         mods = None
-        if args is not None:
-            params = args.split()
-            for param in params:
-                if param.startswith('https://osu.ppy.sh/b'):
-                    map_id = param.split()[-1]
+        for arg in args:
+            if arg.startswith('https://osu.ppy.sh/b'):
+                map_id = arg.split()[-1]
 
-                if param.startswith('+'):
-                    mods = param[1:]
+            if arg.startswith('+'):
+                mods = arg[1:]
 
         if map_id is None:
             with open('cache/recentbeatmaps.json', 'r') as f:
