@@ -3,7 +3,7 @@ import json
 import discord
 from discord.ext import commands
 from util.osu_api import get_beatmap
-from util.osu_tools import pp_calculation
+from util.osu_tools import pp_calculation, add_recent_beatmap
 from util.time_format import sec_to_min, get_time_diff
 
 
@@ -18,7 +18,8 @@ class BeatmapDetails(commands.Cog):
         mods = None
         for arg in args:
             if arg.startswith('https://osu.ppy.sh/b'):
-                map_id = arg.split()[-1]
+                map_id = arg.split('/')[-1]
+                add_recent_beatmap(ctx.channel.id, map_id)
 
             if arg.startswith('+'):
                 mods = arg[1:]

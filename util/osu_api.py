@@ -54,11 +54,11 @@ def get_recent_play(osu_id):
 
 
 def get_user_map_best(beatmap_id, user_id):
-    query = urlencode({'k': API_KEY, 'b': beatmap_id, 'u': user_id, 'm': 0, 'type': 'id', 'limit': 1})
+    query = urlencode({'k': API_KEY, 'b': beatmap_id, 'u': user_id})
     url = 'get_scores' + '?' + query
     scores = call_api(url)
 
     if len(scores) < 1:
         return None
 
-    return Score(scores[0])
+    return Score(scores[0], beatmap_id=beatmap_id)

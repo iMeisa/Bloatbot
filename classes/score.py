@@ -9,9 +9,13 @@ from util.time_format import get_time_diff
 
 
 class Score:
-    def __init__(self, play_data: dict):
-        self.beatmap_id = play_data['beatmap_id']
+    def __init__(self, play_data: dict, **kwargs):
+        keys = list(play_data.keys())
+
+        self.beatmap_id = play_data['beatmap_id'] if 'beatmap_id' in keys else kwargs['beatmap_id']
+        self.score_id = play_data['score_id'] if 'score_id' in keys else None
         self.score = int(play_data['score'])
+        self.username = play_data['username'] if 'username' in keys else None
         self.max_combo = int(play_data['maxcombo'])
         self.count50 = int(play_data['count50'])
         self.count100 = int(play_data['count100'])
@@ -27,8 +31,11 @@ class Score:
         self.date = play_data['date']
         self.when_played = get_time_diff(self.date)
         self.rank = play_data['rank']
-        self.pp = pp_calculation(self.beatmap_id, mods=self.enabled_mods,
-                                 percentage=float(self.acc[:-1]), max_combo=self.max_combo, miss_count=self.count_miss)
+
+        self.pp = play_data['pp'] if 'pp' in keys else \
+            pp_calculation(self.beatmap_id, mods=self.enabled_mods, percentage=float(self.acc[:-1]),
+                           max_combo=self.max_combo, miss_count=self.count_miss)
+
         self.beatmap = _get_beatmap_(self.beatmap_id, self.enabled_mods_bytes)
         self.pass_amount = _pass_amount_(self.beatmap.circle_count, self.beatmap.slider_count,
                                          self.beatmap.spinner_count, self.count_miss, self.count50,
