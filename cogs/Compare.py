@@ -1,6 +1,9 @@
 from discord.ext import commands
 import json
-from util import osu
+
+from util.embed_tools import create_score_embed
+from util.osu_api import get_user, get_user_map_best
+from util.osu_tools import add_recent_beatmap, get_recent_beatmap, get_registered_user
 
 
 class Compare(commands.Cog):
@@ -9,27 +12,29 @@ class Compare(commands.Cog):
         self.client = client
 
     @commands.command()
-    async def c(self, ctx, *, user=''):
-        if len(user) < 3:
-            user = ctx.author.display_name
+    async def c(self, ctx, username=None):
+        user_id = None
+        if username is None:
+            user_id = get_registered_user(ctx.author.id)
+            if user_id is None:
+                await ctx.send('Who is you? Tell me who you are by doing *register `[your osu username]`')
+                return
 
-        with open('lib/recentbeatmaps.json', 'r') as f:
-            recent_beatmaps = json.load(f)
+        user = get_user(username) if username is not None else get_user(user_id, is_id=True)
 
-        # Check if *r was used in the channel
-        channel_id = str(ctx.channel.id)
-        if channel_id not in recent_beatmaps:
-            await ctx.send("Can't find recent map")
-            raise ValueError
+        beatmap_id = get_recent_beatmap(ctx.channel.id)
 
-        beatmap_id = recent_beatmaps[channel_id]
+        score = get_user_map_best(beatmap_id, user.id)
+        if score is None:
+            await ctx.send(f"{user.name} hasn't passed this map yet")
+            return
 
-        embed = osu.create_play_embed(user, beatmap_id=beatmap_id, channel_id=channel_id)
+        add_recent_beatmap(ctx.channel.id, score.beatmap_id)
 
-        if isinstance(embed, str):
-            await ctx.send(embed)
-        else:
-            await ctx.send(embed=embed)
+        # Embed
+        embed = create_score_embed(user, score)
+
+        await ctx.send(embed=embed)
 
 
 def setup(client):

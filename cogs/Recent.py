@@ -3,7 +3,7 @@ import json
 
 from util.embed_tools import create_score_embed
 from util.osu_api import get_recent_play, get_user
-from util.osu_tools import add_recent_beatmap
+from util.osu_tools import add_recent_beatmap, get_registered_user
 
 
 class Recent(commands.Cog):
@@ -13,16 +13,14 @@ class Recent(commands.Cog):
 
     @commands.command()
     async def r(self, ctx, username=None):
+        user_id = None
         if username is None:
-            with open('cache/users.json', 'r') as f:
-                users = json.load(f)
-
-            author = str(ctx.author.id)
-            if author not in list(users.keys()):
+            user_id = get_registered_user(ctx.author.id)
+            if user_id is None:
                 await ctx.send('Who is you? Tell me who you are by doing *register `[your osu username]`')
                 return
 
-        user = get_user(username) if username is not None else get_user(users[str(ctx.author.id)], is_id=True)
+        user = get_user(username) if username is not None else get_user(user_id, is_id=True)
 
         score = get_recent_play(user.id)
         if score is None:

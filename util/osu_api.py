@@ -42,8 +42,8 @@ def get_beatmap(beatmap_id, mod_bytes_raw=0) -> Beatmap:
     return Beatmap(beatmap_data)
 
 
-def get_recent_play(osu_id, osu_id_type='id'):
-    query = urlencode({'k': API_KEY, 'u': osu_id, 'type': osu_id_type, 'limit': 1})
+def get_recent_play(osu_id):
+    query = urlencode({'k': API_KEY, 'u': osu_id, 'type': 'id', 'limit': 1})
     url = 'get_user_recent' + '?' + query
     scores = call_api(url)
 
@@ -53,4 +53,12 @@ def get_recent_play(osu_id, osu_id_type='id'):
     return Score(scores[0])
 
 
+def get_user_map_best(beatmap_id, user_id):
+    query = urlencode({'k': API_KEY, 'b': beatmap_id, 'u': user_id, 'm': 0, 'type': 'id', 'limit': 1})
+    url = 'get_scores' + '?' + query
+    scores = call_api(url)
 
+    if len(scores) < 1:
+        return None
+
+    return Score(scores[0])

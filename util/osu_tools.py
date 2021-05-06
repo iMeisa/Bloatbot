@@ -117,6 +117,24 @@ def get_api_mods(mod_bytes_raw) -> int:
     return mods
 
 
+def get_registered_user(discord_id):
+    discord_id = str(discord_id)
+    with open('cache/users.json', 'r') as f:
+        users = json.load(f)
+
+    if discord_id not in list(users.keys()):
+        return None
+
+    return users[discord_id]
+
+
+def get_recent_beatmap(channel_id: str) -> str:
+    with open('cache/recentbeatmaps.json', 'r') as f:
+        recent_beatmaps = json.load(f)
+
+    return recent_beatmaps[str(channel_id)]
+
+
 def add_recent_beatmap(channel_id: str, beatmap_id: str):
     with open('cache/recentbeatmaps.json', 'r') as f:
         recent_beatmaps = json.load(f)
