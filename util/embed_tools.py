@@ -24,7 +24,7 @@ def create_score_embed(user: User, score: Score) -> discord.Embed:
     )
     embed.set_author(name=author, icon_url=user.pfp, url=user.url)
     embed.add_field(name=score_title, value=score_combo, inline=True)
-    embed.add_field(name='Mods:', value=score.enabled_mods, inline=True)
+    embed.add_field(name='Mods:', value=score.enabled_mods_split, inline=True)
     embed.add_field(name='PP:', value=pp_value, inline=True)
     embed.set_image(url=score.beatmap.cover_url)
     embed.set_footer(text=score.when_played)

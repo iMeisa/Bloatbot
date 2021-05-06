@@ -27,6 +27,7 @@ class Score:
         self.perfect = play_data['perfect'] == '1'
         self.enabled_mods_bytes = play_data['enabled_mods']
         self.enabled_mods = get_mods(self.enabled_mods_bytes, separate=False)
+        self.enabled_mods_split = get_mods(self.enabled_mods_bytes, separate=True)
         self.user_id = play_data['user_id']
         self.date = play_data['date']
         self.when_played = get_time_diff(self.date)
@@ -40,6 +41,8 @@ class Score:
         self.pass_amount = _pass_amount_(self.beatmap.circle_count, self.beatmap.slider_count,
                                          self.beatmap.spinner_count, self.count_miss, self.count50,
                                          self.count100, self.count300)
+
+        self.replay_available = play_data['replay_available'] == '1' if 'replay_available' in keys else False
 
 
 def _get_beatmap_(beatmap_id, mod_bytes_raw=0) -> Beatmap:

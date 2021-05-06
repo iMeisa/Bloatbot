@@ -34,6 +34,12 @@ class Compare(commands.Cog):
         # Embed
         embed = create_score_embed(user, score)
 
+        score_url = 'https://osu.ppy.sh/scores/osu/' + score.score_id
+        embed.description += f' | **[View Score]({score_url})**'
+        if score.replay_available:
+            replay_download = score_url + '/download'
+            embed.description += f' | **[Download Replay]({replay_download})**'
+
         await ctx.send(embed=embed)
 
 
