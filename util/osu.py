@@ -9,7 +9,7 @@ import subprocess
 import discord
 
 # osu! API
-with open('Cogs/Tools/osuAPI.pickle', 'rb') as fl:
+with open('keys/osuAPI.pickle', 'rb') as fl:
     api_key = pickle.load(fl)
 
 
@@ -218,8 +218,8 @@ def sec_to_min(seconds_raw):
 
 
 def pp_calculation(map_id, mods=None, percentage=100.0, max_combo=None, miss_count=0):
-    if not os.path.isfile(f'./Cogs/Tools/oppai-cache/{map_id}.osu'):
-        os.system(f'curl https://osu.ppy.sh/osu/{map_id} > ./Cogs/Tools/oppai-cache/{map_id}.osu')
+    if not os.path.isfile(f'oppai_cache/{map_id}.osu'):
+        os.system(f'curl https://osu.ppy.sh/osu/{map_id} > oppai_cache/{map_id}.osu')
 
     params = ''
     if mods is not None:
@@ -231,7 +231,7 @@ def pp_calculation(map_id, mods=None, percentage=100.0, max_combo=None, miss_cou
     if miss_count > 0:
         params += f' {miss_count}m'
 
-    pp_data = subprocess.check_output(f'oppai ./Cogs/Tools/oppai-cache/{map_id}.osu {params}',
+    pp_data = subprocess.check_output(f'oppai oppai_cache/{map_id}.osu {params}',
                                       shell=True).decode('UTF-8').split('\n')
     map_pp_data = pp_data[-3].split()
     pp_total = round(float(map_pp_data[0]))
@@ -329,11 +329,11 @@ def create_play_embed(user, beatmap_id=None, channel_id=None, beatmap_only=False
         enabled_mods = mods.upper()
 
     # Save most recent beatmap id
-    with open('./Cogs/Tools/recentbeatmaps.json', 'r') as f:
+    with open('cache/recentbeatmaps.json', 'r') as f:
         recent_beatmaps = json.load(f)
 
     recent_beatmaps[str(channel_id)] = beatmap_id
-    with open('./Cogs/Tools/recentbeatmaps.json', 'w') as f:
+    with open('cache/recentbeatmaps.json', 'w') as f:
         json.dump(recent_beatmaps, f)
 
     # Determine rank status

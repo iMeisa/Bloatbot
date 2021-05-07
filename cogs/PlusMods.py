@@ -1,19 +1,16 @@
 from discord.ext import commands
 import json
-from Cogs.Tools import osu
+from util import osu
 
 
-class Compare(commands.Cog):
+class PlusMods(commands.Cog):
 
     def __init__(self, client):
         self.client = client
 
     @commands.command()
-    async def c(self, ctx, *, user=''):
-        if len(user) < 3:
-            user = ctx.author.display_name
-
-        with open('Cogs/Tools/recentbeatmaps.json', 'r') as f:
+    async def m(self, ctx, mods):
+        with open('cache/recentbeatmaps.json', 'r') as f:
             recent_beatmaps = json.load(f)
 
         # Check if *r was used in the channel
@@ -24,7 +21,7 @@ class Compare(commands.Cog):
 
         beatmap_id = recent_beatmaps[channel_id]
 
-        embed = osu.create_play_embed(user, beatmap_id=beatmap_id, channel_id=channel_id)
+        embed = osu.create_play_embed(user=ctx.author.display_name, beatmap_id=beatmap_id, beatmap_only=True, mods=mods)
 
         if isinstance(embed, str):
             await ctx.send(embed)
@@ -33,4 +30,4 @@ class Compare(commands.Cog):
 
 
 def setup(client):
-    client.add_cog(Compare(client))
+    client.add_cog(PlusMods(client))

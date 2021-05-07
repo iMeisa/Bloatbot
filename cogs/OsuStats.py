@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-from Cogs.Tools import osu
+from util import osu
 
 
 class OsuStats(commands.Cog):
