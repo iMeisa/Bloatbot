@@ -2,42 +2,68 @@ import json
 import os
 import subprocess
 
+mod_name_list = ['NF', 'EZ', 'TD', 'HD', 'HR', 'SD', 'DT', 'RX', 'HT', 'NC', 'FL', 'AU', 'SO', 'AP', 'PF',
+                 'K4', 'K5', 'K6', 'K7', 'K8', 'FI', 'RD', 'CN', 'TG', 'K9', 'KC', 'K1', 'K3', 'K2', 'V2', 'MR']
+
 
 def get_mods(mod_id: int, separate: bool = True) -> str:
     if mod_id is None or mod_id == '0':
         return 'None'
 
+    # Get mod bits
     mod_id = int(mod_id)
-
-    mods = ['NF', 'EZ', 'Touch', 'HD', 'HR', 'SD', 'DT', 'RX', 'HT', 'NC', 'FL', 'AU', 'SO', 'AP', 'PF',
-            'K4', 'K5', 'K6', 'K7', 'K8', 'FI', 'RD', 'CN', 'TG', 'K9', 'KC', 'K1', 'K3', 'K2', 'V2', 'MR']
     mod_list = []
-    for i in range((len(mods) - 1), -1, -1):
-        mod_value = 2 ** i
+    for i in range((len(mod_name_list) - 1), -1, -1):
+        mod_value = 1 << i
         if mod_id >= mod_value:
             mod_id -= mod_value
-            mod_list.append(mods[i])
+            mod_list.append(mod_name_list[i])
     mod_list.reverse()
 
-    used_mods = str()
-    for i in range(len(mod_list)):
-        if separate:
-            if i == (len(mod_list) - 1):
-                used_mods += mod_list[i]
-            else:
-                used_mods += mod_list[i] + ', '
-        else:
-            used_mods += mod_list[i]
+    # Remove redundant mods
+    if 'NC' in mod_list:
+        mod_list.remove('DT')
+    if 'PF' in mod_list:
+        mod_list.remove('SD')
+
+    # Format string
+    used_mods = ''.join(mod_list) if not separate else ', '.join(mod_list)
 
     return used_mods
 
 
-def oppai(map_id, *, params) -> list:
+def get_mods_id(enabled_mods: str) -> int:
+    if enabled_mods is None:
+        return 0
+
+    mod_bytes = 0
+    for i in range(0, len(enabled_mods), 2):
+        mod = enabled_mods[i:i+2].upper()
+        if mod not in mod_name_list:
+            continue
+
+        mod_index = mod_name_list.index(mod)
+        mod_value = 1 << mod_index
+
+        if mod_value == 512:
+            mod_value += 64
+        if mod_value == 16384:
+            mod_value += 32
+
+        mod_bytes += mod_value
+
+    print('mod_bytes:', mod_bytes)
+    return mod_bytes
+
+
+def oppai(map_id, oppai_params) -> list:
     if not os.path.isfile(f'oppai_cache/{map_id}.osu'):
         os.system(f'curl https://osu.ppy.sh/osu/{map_id} > oppai_cache/{map_id}.osu')
 
-    oppai_data = subprocess.check_output(f'oppai oppai_cache/{map_id}.osu {params}', shell=True)\
+    oppai_data = subprocess.check_output(f'oppai oppai_cache/{map_id}.osu {oppai_params}', shell=True)\
         .decode('UTF-8').split('\n')
+
+    print(oppai_data)
 
     return oppai_data
 
@@ -55,7 +81,7 @@ def pp_calculation(map_id, mods: str = None, percentage: float = 100.0, max_comb
     if miss_count > 0:
         params += f' {miss_count}m'
 
-    oppai_data = oppai(map_id=map_id, params=params)
+    oppai_data = oppai(map_id=map_id, oppai_params=params)
     map_pp_data = oppai_data[-3].split()
     pp_total = round(float(map_pp_data[0]))
     return pp_total

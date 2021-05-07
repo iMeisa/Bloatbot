@@ -1,4 +1,4 @@
-from util.osu_tools import rank_emoji
+from util.osu_tools import rank_emoji, oppai
 
 
 class Beatmap:
@@ -48,3 +48,22 @@ class Beatmap:
         self.diff_aim = float(beatmap_data['diff_aim'])
         self.diff_speed = float(beatmap_data['diff_speed'])
         self.sr = f'{float(beatmap_data["difficultyrating"]):.2f}'
+
+    def mod_adjust(self, mods: str):
+        if mods is None:
+            return
+
+        mods = mods.upper()
+        params = '+' + mods
+        adjusted_stats = oppai(map_id=self.id, oppai_params=params)
+
+        difficulty = adjusted_stats[2].split()
+        self.ar = float(difficulty[0][2:])
+        self.od = float(difficulty[1][2:])
+        self.cs = float(difficulty[2][2:])
+        self.hp = float(difficulty[3][2:])
+
+        if 'DT' in mods or 'NC' in mods:
+            self.bpm *= 1.5
+            self.hit_length *= 0.66
+            self.total_length *= 0.66

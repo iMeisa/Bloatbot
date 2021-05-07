@@ -3,7 +3,7 @@ import json
 import discord
 from discord.ext import commands
 from util.osu_api import get_beatmap
-from util.osu_tools import pp_calculation, add_recent_beatmap
+from util.osu_tools import pp_calculation, add_recent_beatmap, get_mods_id
 from util.time_format import sec_to_min, get_time_diff
 
 
@@ -35,7 +35,8 @@ class BeatmapDetails(commands.Cog):
 
             map_id = recent_beatmaps[channel_id]
 
-        beatmap = get_beatmap(beatmap_id=map_id)
+        beatmap = get_beatmap(beatmap_id=map_id, mod_bytes_raw=get_mods_id(mods))
+        beatmap.mod_adjust(mods)
         title = f'{beatmap.approved_emoji} {beatmap.artist} - {beatmap.title} [{beatmap.version}]'
         beatmap_cover = 'https://assets.ppy.sh/beatmaps/' + beatmap.set_id + '/covers/cover.jpg'
         beatmap_difficulty = f'CS: `{beatmap.cs}` AR: `{beatmap.ar}`\n' \
