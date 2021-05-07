@@ -67,3 +67,8 @@ class Beatmap:
             self.bpm *= 1.5
             self.hit_length *= 0.66
             self.total_length *= 0.66
+
+        if 'HT' in mods:
+            self.bpm *= 0.66
+            self.hit_length *= 1.5
+            self.total_length *= 1.5
