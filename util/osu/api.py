@@ -9,7 +9,7 @@ from classes.score import Score
 from classes.user import User
 
 # osu! API key
-from util.osu_tools import get_mods, get_api_mods
+from util.osu.tools import get_api_mods
 
 with open('keys/osuAPI.pickle', 'rb') as fl:
     API_KEY = pickle.load(fl)

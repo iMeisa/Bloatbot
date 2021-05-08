@@ -2,7 +2,7 @@ import discord
 
 from classes.score import Score
 from classes.user import User
-from util.osu_tools import pp_calculation
+from util.osu.tools import pp_calculation
 
 
 def create_score_embed(user: User, score: Score) -> discord.Embed:

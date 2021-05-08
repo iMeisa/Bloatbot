@@ -2,8 +2,8 @@ import json
 
 import discord
 from discord.ext import commands
-from util.osu_api import get_beatmap
-from util.osu_tools import pp_calculation, add_recent_beatmap, get_mods_id
+from util.osu.api import get_beatmap
+from util.osu.tools import pp_calculation, add_recent_beatmap, get_mods_id
 from util.time_format import sec_to_min, get_time_diff
 
 

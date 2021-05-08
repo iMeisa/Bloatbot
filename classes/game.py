@@ -1,5 +1,5 @@
 from classes.score import Score
-from util.osu_tools import get_mods
+from util.osu.tools import get_mods
 
 
 class Game:
