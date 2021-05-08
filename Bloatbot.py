@@ -17,7 +17,7 @@ async def on_ready():
     print('Bloop bloop')
     await client.change_presence(status=discord.Status.online, activity=discord.Game('with dolphins'))
 
-bot_version = 'v2.0-beta'
+bot_version = 'v2.0'
 
 
 @client.event
@@ -40,7 +40,7 @@ async def on_message(message):
     if message.content.lower().startswith('oof'):
         await message.channel.send('Oof')
 
-    if message.content.lower() == 'nice' or '69' in message.content:
+    if '69' in message.content:
         await message.channel.send('Nice')
 
     if message.content.startswith('!r') or message.content.startswith('>rs'):
