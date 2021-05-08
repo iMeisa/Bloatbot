@@ -186,12 +186,12 @@ def get_api_mods(mod_bytes_raw) -> int:
 
 def get_registered_user(discord_id):
     """
-    Gives osu id of registered discord user
+    Gives osu! id of registered discord user
 
     Returns None if not registered
 
     :param discord_id: Discord ID of user `string`
-    :return: osu ID of user `string`
+    :return: osu! ID of user `string`
     """
 
     discord_id = str(discord_id)
