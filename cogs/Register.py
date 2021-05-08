@@ -1,7 +1,7 @@
 import json
 
 from discord.ext import commands
-from util.osu_api import get_user
+from util.osu.api import get_user
 
 
 class Register(commands.Cog):

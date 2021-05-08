@@ -1,11 +1,19 @@
-import discord
+from discord import Embed, Color
 
 from classes.score import Score
 from classes.user import User
-from util.osu_tools import pp_calculation
+from util.osu.tools import pp_calculation
 
 
-def create_score_embed(user: User, score: Score) -> discord.Embed:
+def create_score_embed(user: User, score: Score) -> Embed:
+    """
+    Creates discord embed from given `Score` class
+
+    :param user: `User`
+    :param score: `Score` achieved by user
+    :return: Discord embed of `Score`
+    """
+
     author = f'{user.name}: {user.pp:,}pp (#{user.global_rank:,} {user.country}{user.country_rank:,})'
     title = f'{score.beatmap.artist} - {score.beatmap.title} [{score.beatmap.version}]'
     description = f'**{score.beatmap.sr}** :star: '
@@ -16,7 +24,7 @@ def create_score_embed(user: User, score: Score) -> discord.Embed:
     pp_max = pp_calculation(score.beatmap_id, mods=score.enabled_mods)
     pp_value = f'**{score.pp}pp**/{pp_max}PP'
 
-    embed = discord.Embed(
+    embed = Embed(
         title=title,
         url=score.beatmap.url,
         description=description,
@@ -32,19 +40,26 @@ def create_score_embed(user: User, score: Score) -> discord.Embed:
     return embed
 
 
-def get_color(rank: str = 'F') -> discord.Color:
+def get_color(rank: str = 'F') -> Color:
+    """
+    Gives discord.Color based on rank achieved in score
+
+    :param rank: Rank achieved on score `string`
+    :return: `discord.Color`
+    """
+
     rank = rank.upper()
     if rank in ['SH', 'SSH']:
-        return discord.Color.light_grey()
+        return Color.light_grey()
     if rank in ['S', 'SS']:
-        return discord.Color.gold()
+        return Color.gold()
     if rank == 'A':
-        return discord.Color.green()
+        return Color.green()
     if rank == 'B':
-        return discord.Color.blue()
+        return Color.blue()
     if rank == 'C':
-        return discord.Color.purple()
+        return Color.purple()
     if rank == 'D':
-        return discord.Color.red()
+        return Color.red()
 
-    return discord.Color.darker_gray()
+    return Color.darker_gray()

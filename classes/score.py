@@ -4,7 +4,7 @@ from urllib.parse import urlencode
 from urllib.request import urlopen
 
 from classes.beatmap import Beatmap
-from util.osu_tools import get_acc, get_mods, get_api_mods, pp_calculation
+from util.osu.tools import get_acc, get_mods, get_api_mods, pp_calculation
 from util.time_format import get_time_diff
 
 

@@ -9,7 +9,7 @@ from classes.score import Score
 from classes.user import User
 
 # osu! API key
-from util.osu_tools import get_mods, get_api_mods
+from util.osu.tools import get_api_mods
 
 with open('keys/osuAPI.pickle', 'rb') as fl:
     API_KEY = pickle.load(fl)
@@ -24,6 +24,14 @@ def call_api(url_param) -> dict:
 
 
 def get_user(username, is_id=False) -> User:
+    """
+    Gives osu! user details
+
+    :param username: osu! username or ID `string`
+    :param is_id: If provided username is an ID `bool`
+    :return: User class of osu! user `User`
+    """
+
     name_type = 'string' if not is_id else 'id'
     query = urlencode({'k': API_KEY, 'u': username, 'type': name_type})
     user_url = 'get_user' + '?' + query
@@ -33,6 +41,14 @@ def get_user(username, is_id=False) -> User:
 
 
 def get_beatmap(beatmap_id, mod_bytes_raw=0) -> Beatmap:
+    """
+    Gives beatmap details from beatmap ID
+
+    :param beatmap_id: Beatmap ID
+    :param mod_bytes_raw:
+    :return:
+    """
+
     mods = get_api_mods(mod_bytes_raw)
 
     query = urlencode({'k': API_KEY, 'b': beatmap_id, 'mods': mods})
@@ -44,6 +60,15 @@ def get_beatmap(beatmap_id, mod_bytes_raw=0) -> Beatmap:
 
 
 def get_recent_play(osu_id):
+    """
+    Gives the most recent play of a user in the last 24 hours
+
+    Returns None if no plays in the last 24 hours
+
+    :param osu_id: osu! ID `string` or `int`
+    :return: Score class of the most recent play `Score`
+    """
+
     query = urlencode({'k': API_KEY, 'u': osu_id, 'type': 'id', 'limit': 1})
     url = 'get_user_recent' + '?' + query
     scores = call_api(url)
@@ -55,6 +80,16 @@ def get_recent_play(osu_id):
 
 
 def get_user_map_best(beatmap_id, user_id):
+    """
+    Gives best play of user on given beatmap
+
+    Returns None if user has no plays on given beatmap
+
+    :param beatmap_id: Beatmap ID `string` or `int`
+    :param user_id: osu! ID `string` or `int`
+    :return: Score class of best play `Score`
+    """
+
     query = urlencode({'k': API_KEY, 'b': beatmap_id, 'u': user_id})
     url = 'get_scores' + '?' + query
     scores = call_api(url)

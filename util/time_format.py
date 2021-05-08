@@ -2,6 +2,13 @@ from datetime import datetime
 
 
 def get_time_diff(time_origin):
+    """
+    Gives approximate time difference between datetime given and now
+
+    :param time_origin: Time before `string`
+    :return: Approximately how long ago `string`
+    """
+
     fmt = '%Y-%m-%d %H:%M:%S'
     time_now = datetime.utcnow().strftime(fmt)
     time_diff = datetime.strptime(time_now, fmt) - datetime.strptime(time_origin, fmt)
@@ -45,6 +52,13 @@ def get_time_diff(time_origin):
 
 
 def sec_to_min(seconds_raw):
+    """
+    Converts seconds to minutes and seconds in MM:SS format
+
+    :param seconds_raw: Total amount of seconds `int`
+    :return: Minutes and seconds in MM:SS format `string`
+    """
+
     seconds = int(seconds_raw)
     minutes = seconds // 60
     seconds = seconds - (minutes * 60)

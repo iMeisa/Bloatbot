@@ -1,9 +1,8 @@
 from discord.ext import commands
-import json
 
 from util.embed_tools import create_score_embed
-from util.osu_api import get_recent_play, get_user
-from util.osu_tools import add_recent_beatmap, get_registered_user
+from util.osu.api import get_recent_play, get_user
+from util.osu.tools import add_recent_beatmap, get_registered_user
 
 
 class Recent(commands.Cog):

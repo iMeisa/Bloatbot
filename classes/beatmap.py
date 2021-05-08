@@ -1,4 +1,4 @@
-from util.osu_tools import rank_emoji, oppai
+from util.osu.tools import rank_emoji, oppai
 
 
 class Beatmap:
