@@ -1,9 +1,5 @@
 venv/
 .idea/
-keys/token.txt
-testtoken.txt
-keys/osuAPI.pickle
-Bloatbot - Shortcut.lnk
-cogs/CogTemplate.py
-oppai_cache/*
+keys/
+oppai_cache/
 db/*.db
