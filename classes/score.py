@@ -36,6 +36,8 @@ class Score:
         self.pp = play_data['pp'] if 'pp' in keys else \
             pp_calculation(self.beatmap_id, mods=self.enabled_mods, percentage=float(self.acc[:-1]),
                            max_combo=self.max_combo, miss_count=self.count_miss)
+        if self.pp is None:
+            self.pp = '0'
 
         self.beatmap = _get_beatmap_(self.beatmap_id, self.enabled_mods_bytes)
         self.pass_amount = _pass_amount_(self.beatmap.circle_count, self.beatmap.slider_count,

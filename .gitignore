@@ -7,4 +7,4 @@ cache/*
 Bloatbot - Shortcut.lnk
 cogs/CogTemplate.py
 oppai_cache/*
-db/*
+db/*.db
