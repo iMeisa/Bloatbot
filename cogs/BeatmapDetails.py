@@ -2,8 +2,10 @@ import json
 
 import discord
 from discord.ext import commands
+
+from db.beatmaps import add_recent_beatmap, get_recent_beatmap
 from util.osu.api import get_beatmap
-from util.osu.tools import pp_calculation, add_recent_beatmap, get_mods_id
+from util.osu.tools import pp_calculation, get_mods_id
 from util.time_format import sec_to_min, get_time_diff
 
 
@@ -25,15 +27,10 @@ class BeatmapDetails(commands.Cog):
                 mods = arg[1:]
 
         if map_id is None:
-            with open('cache/recentbeatmaps.json', 'r') as f:
-                recent_beatmaps = json.load(f)
-
-            channel_id = str(ctx.channel.id)
-            if channel_id not in list(recent_beatmaps.keys()):
-                await ctx.send('Provide beatmap id')
+            map_id = get_recent_beatmap(ctx.channel.id)
+            if map_id is None:
+                await ctx.send("No beatmaps have been posted on this channel yet")
                 return
-
-            map_id = recent_beatmaps[channel_id]
 
         beatmap = get_beatmap(beatmap_id=map_id, mod_bytes_raw=get_mods_id(mods))
         beatmap.mod_adjust(mods)

@@ -1,8 +1,9 @@
 from discord.ext import commands
 
+from db.beatmaps import get_recent_beatmap, add_recent_beatmap
+from db.users import get_registered_user
 from util.embed_tools import create_score_embed
 from util.osu.api import get_user, get_user_map_best
-from util.osu.tools import add_recent_beatmap, get_recent_beatmap, get_registered_user
 
 
 class Compare(commands.Cog):
@@ -22,6 +23,9 @@ class Compare(commands.Cog):
         user = get_user(username) if username is not None else get_user(user_id, is_id=True)
 
         beatmap_id = get_recent_beatmap(ctx.channel.id)
+        if beatmap_id is None:
+            await ctx.send("No beatmaps have been posted on this channel yet")
+            return
 
         score = get_user_map_best(beatmap_id, user.id)
         if score is None:

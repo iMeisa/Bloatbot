@@ -53,7 +53,6 @@ def get_beatmap(beatmap_id, mod_bytes_raw=0) -> Beatmap:
 
     query = urlencode({'k': API_KEY, 'b': beatmap_id, 'mods': mods})
     beatmap_url = 'get_beatmaps' + '?' + query
-    print('beatmap_url:', beatmap_url)
     beatmap_data = call_api(beatmap_url)[0]
 
     return Beatmap(beatmap_data)

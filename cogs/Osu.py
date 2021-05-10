@@ -3,8 +3,8 @@ import csv
 import discord
 from discord.ext import commands
 
+from db.users import get_registered_user
 from util.osu.api import get_user
-from util.osu.tools import get_registered_user
 
 
 class Osu(commands.Cog):
@@ -23,6 +23,7 @@ class Osu(commands.Cog):
 
         user = get_user(username) if username is not None else get_user(user_id, is_id=True)
 
+        ###
         # Country code reader
         with open('lib/country_codes.csv', 'r') as f:
             reader = csv.DictReader(f)
@@ -30,6 +31,7 @@ class Osu(commands.Cog):
             for row in reader:
                 country_codes[row['alpha-2']] = row['name']
         country_name = country_codes[user.country.upper()]
+        ###
 
         player_title = f'Stats for {user.name}\n'
         profile_stats = f'**Global Rank:** #{user.global_rank:,} (#{user.country_rank:,})\n' \

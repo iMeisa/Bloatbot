@@ -1,6 +1,6 @@
-import json
-
 from discord.ext import commands
+
+from db.users import check_registration, register_user
 from util.osu.api import get_user
 
 
@@ -10,22 +10,22 @@ class Register(commands.Cog):
         self.client = client
 
     @commands.command()
-    async def register(self, ctx, osu_name):
-        author = str(ctx.author.id)
+    async def register(self, ctx, osu_name: str):
+        discord_id = str(ctx.author.id)
 
-        with open('cache/users.json', 'r') as f:
-            users = json.load(f)
-        if author in list(users.keys()):
+        registered = check_registration(discord_id)
+        if registered:
             await ctx.send('You are already registered')
             return
 
-        user = get_user(osu_name)
-        users[author] = user.id
+        osu_id = get_user(osu_name).id
+        registered = register_user(discord_id, osu_id)
 
-        with open('cache/users.json', 'w') as f:
-            json.dump(users, f)
+        if registered:
+            await ctx.message.add_reaction('✅')
+            return
 
-        await ctx.message.add_reaction('✅')
+        await ctx.send("Couldn't register you for some reason")
 
 
 def setup(client):
