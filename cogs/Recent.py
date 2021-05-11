@@ -2,6 +2,7 @@ from discord.ext import commands
 
 from db.beatmaps import add_recent_beatmap
 from db.osu_ids import get_registered_user
+from db.points import update_points
 from util.embed_tools import create_score_embed
 from util.osu.api import get_recent_play, get_user
 
@@ -33,6 +34,9 @@ class Recent(commands.Cog):
         embed = create_score_embed(user, score)
 
         await ctx.send(embed=embed)
+
+        if username is None and score.rank != 'F':
+            update_points(ctx.author.id, score.count_miss, score.count50, score.count100, score.count300, score.date)
 
 
 def setup(client):
