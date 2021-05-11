@@ -3,7 +3,7 @@ import csv
 import discord
 from discord.ext import commands
 
-from db.users import get_registered_user
+from db.osu_ids import get_registered_user
 from util.osu.api import get_user
 
 

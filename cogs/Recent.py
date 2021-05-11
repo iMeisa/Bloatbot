@@ -1,7 +1,7 @@
 from discord.ext import commands
 
 from db.beatmaps import add_recent_beatmap
-from db.users import get_registered_user
+from db.osu_ids import get_registered_user
 from util.embed_tools import create_score_embed
 from util.osu.api import get_recent_play, get_user
 

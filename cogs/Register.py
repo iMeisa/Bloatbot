@@ -1,6 +1,6 @@
 from discord.ext import commands
 
-from db.users import check_registration, register_user
+from db.osu_ids import check_registration, register_user
 from util.osu.api import get_user
 
 
