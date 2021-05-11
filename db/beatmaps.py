@@ -20,8 +20,6 @@ def get_recent_beatmap(channel_id: str):
     if beatmap_id is not None:
         beatmap_id = beatmap_id[0]
 
-    print('beatmap_id:', beatmap_id)
-
     cursor.close()
     return beatmap_id
 
