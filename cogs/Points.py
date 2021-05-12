@@ -13,9 +13,11 @@ class Points(commands.Cog):
     async def p(self, ctx, member: discord.Member = None):
         discord_id = ctx.author.id
         discord_name = ctx.author.display_name
+        discord_pfp = ctx.author.avatar_url
         if member is not None:
             discord_id = member.id
             discord_name = member.display_name
+            discord_pfp = member.avatar_url
 
         point_total = get_points(discord_id)
         if point_total is None:
@@ -27,7 +29,7 @@ class Points(commands.Cog):
             description=str(point_total) + ' circles',
             color=discord.Color.magenta()
         )
-        embed.set_author(name=discord_name, icon_url=ctx.author.avatar_url)
+        embed.set_author(name=discord_name, icon_url=discord_pfp)
 
         await ctx.send(embed=embed)
         
@@ -44,7 +46,7 @@ class Points(commands.Cog):
         users = get_points_htl()
         guild = ctx.guild
 
-        leaderboard = f'```{"RANK":<5} {"NAME":<32} {"POINTS":<6}```\n```'
+        leaderboard = f'```{"RANK":<5} {"NAME":<32} {"CIRCLES":<6}```\n```'
         content_list = []
         rank = 1
         for user in users:
