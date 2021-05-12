@@ -2,9 +2,11 @@ import discord
 from discord.ext import commands
 import os
 
+intents = discord.Intents.all()
+
 with open('keys/token.txt', 'r') as fl:
     TOKEN = fl.read()
-client = commands.Bot(command_prefix='*')
+client = commands.Bot(command_prefix='*', intents=intents)
 client.remove_command('help')
 
 for filename in os.listdir('cogs'):
@@ -39,9 +41,6 @@ async def on_message(message):
 
     if message.content.lower().startswith('oof'):
         await message.channel.send('Oof')
-
-    if '69' in message.content:
-        await message.channel.send('Nice')
 
     if message.content.startswith('!r') or message.content.startswith('>rs'):
         await message.channel.send("You didn't use my *r command :(")

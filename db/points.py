@@ -40,6 +40,15 @@ def update_points(discord_id, miss_count, count_50, count_100, count_300, play_d
     cursor.connection.commit()
 
 
+def change_points(discord_id, amount):
+    add_user(discord_id)
+
+    cursor = connect()
+    cursor.execute(f'UPDATE points SET points = points + {amount} WHERE discord_id = {discord_id}')
+
+    cursor.connection.commit()
+
+
 def get_points(discord_id):
     cursor = connect()
     cursor.execute(f'SELECT points FROM points WHERE discord_id = {discord_id}')
@@ -50,3 +59,10 @@ def get_points(discord_id):
         return None
 
     return point_total[0]
+
+
+def get_points_htl():
+    cursor = connect()
+    cursor.execute('select discord_id, points from points order by points DESC')
+
+    return cursor.fetchall()
