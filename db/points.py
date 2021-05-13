@@ -36,7 +36,7 @@ def update_points(discord_id, miss_count, count_50, count_100, count_300, play_d
     :param play_date: Date the play was submitted `str`
     """
 
-    point_difference = count_50 + (count_100*2) + ((count_300-miss_count)*6)
+    point_difference = (count_50 + (count_100*2) + ((count_300-miss_count)*6)) / 100
     point_difference = point_difference if point_difference > 0 else 0
 
     add_user(discord_id)
