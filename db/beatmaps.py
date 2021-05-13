@@ -1,7 +1,7 @@
 import sqlite3
 
 
-def connect():
+def _connect_():
     db = sqlite3.connect('db/osu.db')
     cursor = db.cursor()
     cursor.execute('CREATE TABLE IF NOT EXISTS recent_beatmaps (channel_id text, beatmap_id text)')
@@ -17,7 +17,7 @@ def get_recent_beatmap(channel_id: str):
     :return: Beatmap ID `string`
     """
 
-    cursor = connect()
+    cursor = _connect_()
     cursor.execute(f"SELECT beatmap_id FROM recent_beatmaps WHERE channel_id = {channel_id}")
 
     beatmap_id = cursor.fetchone()
@@ -33,7 +33,7 @@ def add_channel_id(channel_id: str):
     Adds channel ID to db if ID is not in db
     """
 
-    cursor = connect()
+    cursor = _connect_()
     cursor.execute(f"SELECT channel_id FROM recent_beatmaps WHERE channel_id = {channel_id}")
 
     channels = cursor.fetchone()
@@ -52,7 +52,7 @@ def add_recent_beatmap(channel_id: str, beatmap_id: str):
     :param beatmap_id: Beatmap ID `string`
     """
 
-    cursor = connect()
+    cursor = _connect_()
     add_channel_id(channel_id)
     cursor.execute(f"UPDATE recent_beatmaps SET beatmap_id = {beatmap_id} WHERE channel_id = {channel_id}")
 

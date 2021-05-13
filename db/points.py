@@ -1,7 +1,7 @@
 import sqlite3
 
 
-def connect():
+def _connect_():
     cursor = sqlite3.connect('db/osu.db').cursor()
     cursor.execute('CREATE TABLE IF NOT EXISTS "point_data" (discord_id text, points integer, last_play_date text)')
     cursor.connection.commit()
@@ -15,7 +15,7 @@ def add_user(discord_id):
     :param discord_id: Discord ID `str`
     """
 
-    cursor = connect()
+    cursor = _connect_()
     cursor.execute(f'SELECT * FROM point_data WHERE discord_id = {discord_id}')
     
     exists = cursor.fetchone() is not None
@@ -44,7 +44,7 @@ def update_points(discord_id, miss_count, count_50, count_100, count_300, play_d
 
     add_user(discord_id)
 
-    cursor = connect()
+    cursor = _connect_()
 
     # Check play date so same play doesn't give more points
     cursor.execute(f'SELECT last_play_date FROM point_data WHERE discord_id = {discord_id}')
@@ -68,7 +68,7 @@ def change_points(discord_id, amount):
 
     add_user(discord_id)
 
-    cursor = connect()
+    cursor = _connect_()
     cursor.execute(f'UPDATE point_data SET points = points + {amount} WHERE discord_id = {discord_id}')
 
     cursor.connection.commit()
@@ -82,7 +82,7 @@ def get_points(discord_id):
     :return: Point amount `int`
     """
 
-    cursor = connect()
+    cursor = _connect_()
     cursor.execute(f'SELECT points FROM point_data WHERE discord_id = {discord_id}')
 
     point_total = cursor.fetchone()
@@ -100,7 +100,7 @@ def get_points_htl():
     :return: Points high to low `list`
     """
 
-    cursor = connect()
+    cursor = _connect_()
     cursor.execute('SELECT discord_id, points FROM point_data ORDER BY points DESC')
 
     return cursor.fetchall()
