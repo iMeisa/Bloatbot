@@ -2,7 +2,11 @@ import sqlite3
 
 
 def connect():
-    return sqlite3.connect('db/osu.db').cursor()
+    db = sqlite3.connect('db/osu.db')
+    cursor = db.cursor()
+    cursor.execute('CREATE TABLE IF NOT EXISTS recent_beatmaps (channel_id text, beatmap_id text)')
+    cursor.connection.commit()
+    return cursor
 
 
 def get_recent_beatmap(channel_id: str):

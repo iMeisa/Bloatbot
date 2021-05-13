@@ -2,7 +2,10 @@ import sqlite3
 
 
 def connect():
-    return sqlite3.connect('db/osu.db').cursor()
+    cursor = sqlite3.connect('db/osu.db').cursor()
+    cursor.execute('CREATE TABLE IF NOT EXISTS osu_ids (discord_id text, osu_id text)')
+    cursor.connection.commit()
+    return cursor
 
 
 def check_registration(discord_id) -> bool:

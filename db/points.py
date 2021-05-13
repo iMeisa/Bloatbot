@@ -2,7 +2,10 @@ import sqlite3
 
 
 def connect():
-    return sqlite3.connect('db/osu.db').cursor()
+    cursor = sqlite3.connect('db/osu.db').cursor()
+    cursor.execute('CREATE TABLE IF NOT EXISTS "point_data" (discord_id text, points integer, last_play_date text)')
+    cursor.connection.commit()
+    return cursor
 
 
 def add_user(discord_id):
