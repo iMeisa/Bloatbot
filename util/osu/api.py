@@ -29,7 +29,7 @@ def get_user(username, is_id=False) -> User:
 
     :param username: osu! username or ID `string`
     :param is_id: If provided username is an ID `bool`
-    :return: User class of osu! user `User`
+    :return: osu! user `User`
     """
 
     name_type = 'string' if not is_id else 'id'
@@ -45,8 +45,8 @@ def get_beatmap(beatmap_id, mod_bytes_raw=0) -> Beatmap:
     Gives beatmap details from beatmap ID
 
     :param beatmap_id: Beatmap ID
-    :param mod_bytes_raw:
-    :return:
+    :param mod_bytes_raw: Bitwise sum of mods `int`
+    :return: Beatmap info `Beatmap`
     """
 
     mods = get_api_mods(mod_bytes_raw)

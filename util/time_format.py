@@ -5,8 +5,8 @@ def get_time_diff(time_origin):
     """
     Gives approximate time difference between datetime given and now
 
-    :param time_origin: Time before `string`
-    :return: Approximately how long ago `string`
+    :param time_origin: Time before `str`
+    :return: Approximately how long ago `str`
     """
 
     fmt = '%Y-%m-%d %H:%M:%S'
@@ -56,7 +56,7 @@ def sec_to_min(seconds_raw):
     Converts seconds to minutes and seconds in MM:SS format
 
     :param seconds_raw: Total amount of seconds `int`
-    :return: Minutes and seconds in MM:SS format `string`
+    :return: Minutes and seconds in MM:SS format `str`
     """
 
     seconds = int(seconds_raw)

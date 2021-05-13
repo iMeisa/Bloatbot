@@ -10,9 +10,9 @@ def get_mods(mod_id: int, separate: bool = True) -> str:
     """
     Returns a string of mods from the bitwise mod value
 
-    :param mod_id: Bitwise mod value
-    :param separate: Return string separated by commas or as one word
-    :return: String of mods
+    :param mod_id: Bitwise mod value `int`
+    :param separate: Return string separated by commas or as one word `bool`
+    :return: `str` of mods
     """
 
     if mod_id is None or mod_id == '0':
@@ -44,13 +44,14 @@ def get_mods_id(enabled_mods: str) -> int:
     """
     Converts a non-separated string of mods into a bitwise value
 
-    :param enabled_mods: Non-separated string of mods
+    :param enabled_mods: Non-separated `str` of mods
     :return: Bitwise mod value `int`
     """
 
     if enabled_mods is None:
         return 0
 
+    # Cycle through mods every 2 characters in string
     mod_bytes = 0
     for i in range(0, len(enabled_mods), 2):
         mod = enabled_mods[i:i+2].upper()
@@ -75,8 +76,8 @@ def oppai(map_id, oppai_params) -> list:
     """
     Returns beatmap data from the oppai tool
 
-    :param map_id: Beatmap ID
-    :param oppai_params: Oppai params, i.e. (+HDDT)
+    :param map_id: Beatmap ID `str`
+    :param oppai_params: Oppai params, i.e. (+HDDT) `str`
     :return: Oppai output lines as `list`
     """
 
@@ -93,8 +94,8 @@ def pp_calculation(map_id, mods: str = None, percentage: float = 100.0, max_comb
     """
     Calculates PP from the oppai tool
 
-    :param map_id: Beatmap ID
-    :param mods: Non-separated `string` of mods
+    :param map_id: Beatmap ID `str`
+    :param mods: Non-separated `str` of mods
     :param percentage: Play acc `float`
     :param max_combo: Play max combo `int`
     :param miss_count: Play miss count `int`
@@ -123,11 +124,11 @@ def get_acc(n0: int, n50: int, n100: int, n300: int) -> str:
     """
     Gives acc based on all 300s, 100s, 50s and misses
 
-    :param n0: Miss count
-    :param n50: 50 count
-    :param n100: 100 count
-    :param n300: 300 count
-    :return: Acc `string` to 2 decimal points
+    :param n0: Miss count `int`
+    :param n50: 50 count `int`
+    :param n100: 100 count `int`
+    :param n300: 300 count `int`
+    :return: Acc to 2 decimal points `str`
     """
 
     note_hit_count = (50 * n50) + (100 * n100) + (300 * n300)
@@ -140,8 +141,9 @@ def get_acc(n0: int, n50: int, n100: int, n300: int) -> str:
 def rank_emoji(rank_status: int) -> (str, str):
     """
     Gives emoji based on beatmap rank status and rank term
+
     :param rank_status: Rank status value `int`
-    :return: (emoji `string`, rank term `string`)
+    :return: (emoji `str`, rank term `str`)
     """
 
     approve_status = 'last_updated'
@@ -166,7 +168,7 @@ def rank_emoji(rank_status: int) -> (str, str):
 
 def get_api_mods(mod_bytes_raw) -> int:
     """
-    Gives bitwise mod value accepted by api
+    Gives bitwise mod value accepted by the osu! api
 
     :param mod_bytes_raw: Bitwise mod value `int`
     :return: Bitwise mod value the api cares about `int`

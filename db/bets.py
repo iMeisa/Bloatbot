@@ -25,7 +25,7 @@ def check_bets(channel_id):
     return active_bet
 
 
-def check_player_bets(channel_id, discord_id):
+def check_user_bets(channel_id, discord_id):
     """
     Checks for currently placed bets by users
 
@@ -137,7 +137,7 @@ def add_bet(channel_id, discord_id, bet_amount, selected_team):
     if active_bet is None:
         return 'No active bets on this channel rn, make a bet using *makebet `[team 1]` vs `[team 2]`'
 
-    active_player_bet = check_player_bets(channel_id, discord_id)
+    active_player_bet = check_user_bets(channel_id, discord_id)
     if active_player_bet is not None and (bet_amount is None or selected_team is None):
         bet_amount = active_player_bet[0]
         bet_team = active_player_bet[1]

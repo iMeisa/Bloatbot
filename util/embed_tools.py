@@ -42,9 +42,9 @@ def create_score_embed(user: User, score: Score) -> Embed:
 
 def get_color(rank: str = 'F') -> Color:
     """
-    Gives discord.Color based on rank achieved in score
+    Gives `discord.Color` based on rank achieved in score
 
-    :param rank: Rank achieved on score `string`
+    :param rank: Rank achieved on score `str`
     :return: `discord.Color`
     """
 
