@@ -1,7 +1,7 @@
 from datetime import datetime
 
 
-def get_time_diff(time_origin):
+def get_time_diff(time_origin) -> str:
     """
     Gives approximate time difference between datetime given and now
 
@@ -51,7 +51,7 @@ def get_time_diff(time_origin):
                 return '1 day ago'
 
 
-def sec_to_min(seconds_raw):
+def sec_to_min(seconds_raw) -> str:
     """
     Converts seconds to minutes and seconds in MM:SS format
 
@@ -65,4 +65,10 @@ def sec_to_min(seconds_raw):
     if seconds < 10:
         seconds = '0' + str(seconds)
     return f'{minutes}:{seconds}'
+
+
+def sec_to_hrs(seconds_raw) -> str:
+
+    seconds = int(seconds_raw)
+    return f'{round(seconds / 3600)}h'
 

@@ -5,6 +5,7 @@ from discord.ext import commands
 
 from db.osu_ids import get_registered_user
 from util.osu.api import get_user
+from util.time_format import sec_to_hrs
 
 
 class Osu(commands.Cog):
@@ -23,6 +24,8 @@ class Osu(commands.Cog):
 
         user = get_user(username) if username is not None else get_user(user_id, is_id=True)
 
+        user_color = ctx.author.roles[-1].color if isinstance(ctx.author, discord.Member) else discord.Color.random()
+
         ###
         # Country code reader
         with open('lib/country_codes.csv', 'r') as f:
@@ -35,12 +38,15 @@ class Osu(commands.Cog):
 
         player_title = f'Stats for {user.name}\n'
         profile_stats = f'**Global Rank:** #{user.global_rank:,} (#{user.country_rank:,})\n' \
-                        f''
+                        f'**PP:** {user.pp:,}\n' \
+                        f'**Acc:** {user.acc:.2f}% \n' \
+                        f'**Time Played:** {sec_to_hrs(user.total_seconds_played)}\n' \
+                        f'**Level:** {user.level:.2f}'
         other_info = f'**Country:** :flag_{user.country.lower()}: {country_name}\n' \
                      f'**Join Date:** {user.join_date} UTC'
 
         embed = discord.Embed(
-            color=discord.Color.red()
+            color=user_color
         )
 
         embed.set_author(name=player_title, url=user.url)
