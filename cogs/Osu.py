@@ -41,7 +41,7 @@ class Osu(commands.Cog):
                         f'**PP:** {user.pp:,}\n' \
                         f'**Acc:** {user.acc:.2f}% \n' \
                         f'**Time Played:** {sec_to_hrs(user.total_seconds_played)}\n' \
-                        f'**Level:** {user.level:.2f}'
+                        f'**Play Count:** {user.play_count:,}'
         other_info = f'**Country:** :flag_{user.country.lower()}: {country_name}\n' \
                      f'**Join Date:** {user.join_date} UTC'
 
