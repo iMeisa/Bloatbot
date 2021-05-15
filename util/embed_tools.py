@@ -15,14 +15,15 @@ def create_score_embed(user: User, score: Score) -> Embed:
     """
 
     author = f'{user.name}: {user.pp:,}pp (#{user.global_rank:,} {user.country}{user.country_rank:,})'
-    title = f'{score.beatmap.artist} - {score.beatmap.title} [{score.beatmap.version}]'
+    title = f'{score.beatmap.approved_emoji} {score.beatmap.artist} - {score.beatmap.title} [{score.beatmap.version}]'
     description = f'**{score.beatmap.sr}** :star: '
     description += score.pass_amount if score.rank == 'F' else ''
     score_title = f'{score.score:,} ({score.acc})'
     score_combo = f'**{score.max_combo}x**/{score.beatmap.max_combo}X\n' \
                   f'{{ {score.count300} / {score.count100} / {score.count50} / {score.count_miss} }}'
     pp_max = pp_calculation(score.beatmap_id, mods=score.enabled_mods)
-    pp_value = f'**{score.pp}pp**/{pp_max}PP'
+    pp_value = f'**{score.pp}pp**/{pp_max}PP' if 0 < score.beatmap.approved <= 2 or score.rank == 'F' else \
+        f'~~**{score.pp}pp**/{pp_max}PP~~'
 
     embed = Embed(
         title=title,
