@@ -33,6 +33,7 @@ class Gambling(commands.Cog):
         if user_points < bet:
             await ctx.send(f"You only have {user_points} circles")
             return
+        change_points(discord_id, -bet)
 
         heads = randint(0, 1) == 0
 
@@ -40,7 +41,7 @@ class Gambling(commands.Cog):
         win = choice_heads == heads
 
         if win:
-            change_points(discord_id, bet)
+            change_points(discord_id, bet*2)
 
         embed = discord.Embed(
             title="Coin Toss",
