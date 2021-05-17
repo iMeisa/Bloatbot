@@ -22,7 +22,7 @@ def create_score_embed(user: User, score: Score) -> Embed:
     score_combo = f'**{score.max_combo}x**/{score.beatmap.max_combo}X\n' \
                   f'{{ {score.count300} / {score.count100} / {score.count50} / {score.count_miss} }}'
     pp_max = pp_calculation(score.beatmap_id, mods=score.enabled_mods)
-    pp_value = f'**{score.pp}pp**/{pp_max}PP' if 0 < score.beatmap.approved <= 2 or score.rank == 'F' else \
+    pp_value = f'**{score.pp}pp**/{pp_max}PP' if 0 < score.beatmap.approved <= 2 and score.rank != 'F' else \
         f'~~**{score.pp}pp**/{pp_max}PP~~'
 
     # If FC
