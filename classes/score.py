@@ -34,7 +34,7 @@ class Score:
         self.rank = play_data['rank']
 
         self.pp = play_data['pp'] if 'pp' in keys else \
-            pp_calculation(self.beatmap_id, mods=self.enabled_mods, percentage=float(self.acc[:-1]),
+            pp_calculation(self.beatmap_id, mods=self.enabled_mods, acc=float(self.acc[:-1]),
                            max_combo=self.max_combo, miss_count=self.count_miss)
         if self.pp is None:
             self.pp = '0'

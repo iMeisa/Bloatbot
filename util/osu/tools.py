@@ -90,13 +90,13 @@ def oppai(map_id, oppai_params) -> list:
     return oppai_data
 
 
-def pp_calculation(map_id, mods: str = None, percentage: float = 100.0, max_combo: int = 0, miss_count: int = 0) -> int:
+def pp_calculation(map_id, mods: str = None, acc: float = 100.0, max_combo: int = 0, miss_count: int = 0) -> int:
     """
     Calculates PP from the oppai tool
 
     :param map_id: Beatmap ID `str`
     :param mods: Non-separated `str` of mods
-    :param percentage: Play acc `float`
+    :param acc: Play acc `float`
     :param max_combo: Play max combo `int`
     :param miss_count: Play miss count `int`
     :return: PP of given play `int`
@@ -107,8 +107,8 @@ def pp_calculation(map_id, mods: str = None, percentage: float = 100.0, max_comb
     params = ''
     if mods != 'None':
         params += ' +' + mods
-    if percentage < 100:
-        params += f' {percentage}%'
+    if acc < 100:
+        params += f' {acc}%'
     if max_combo > 0:
         params += f' {max_combo}x'
     if miss_count > 0:

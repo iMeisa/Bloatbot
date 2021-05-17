@@ -41,9 +41,9 @@ class BeatmapDetails(commands.Cog):
                        f'BPM: `{int(beatmap.bpm)}`\n' \
                        f'Combo: `{beatmap.max_combo}`'
 
-        pp_95 = pp_calculation(beatmap.id, mods=mods, percentage=95)
-        pp_98 = pp_calculation(beatmap.id, mods=mods, percentage=98)
-        pp_99 = pp_calculation(beatmap.id, mods=mods, percentage=99)
+        pp_95 = pp_calculation(beatmap.id, mods=mods, acc=95)
+        pp_98 = pp_calculation(beatmap.id, mods=mods, acc=98)
+        pp_99 = pp_calculation(beatmap.id, mods=mods, acc=99)
         pp_max = pp_calculation(beatmap.id, mods=mods)
         theoretical_pp = f'95%: `{pp_95}pp`\n98%: `{pp_98}pp`\n99%: `{pp_99}pp`\n100%: `{pp_max}pp`'
 

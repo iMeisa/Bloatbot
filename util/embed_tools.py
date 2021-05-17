@@ -2,7 +2,7 @@ from discord import Embed, Color
 
 from classes.score import Score
 from classes.user import User
-from util.osu.tools import pp_calculation
+from util.osu.tools import pp_calculation, get_acc
 
 
 def create_score_embed(user: User, score: Score) -> Embed:
@@ -23,6 +23,13 @@ def create_score_embed(user: User, score: Score) -> Embed:
                   f'{{ {score.count300} / {score.count100} / {score.count50} / {score.count_miss} }}'
     pp_max = pp_calculation(score.beatmap_id, mods=score.enabled_mods)
     pp_value = f'**{score.pp}pp**/{pp_max}PP'
+
+    # If FC
+    fc = (score.max_combo >= (score.beatmap.max_combo * .98) and score.count_miss == 0) or score.perfect
+    if not fc:
+        fc_acc = get_acc(0, score.count50 + score.count_miss, score.count100, score.count300)
+        fc_pp = pp_calculation(score.beatmap_id, mods=score.enabled_mods, acc=float(fc_acc[:-1]))
+        pp_value += f'\n**{fc_pp}pp** if FC ({fc_acc})'
 
     embed = Embed(
         title=title,
