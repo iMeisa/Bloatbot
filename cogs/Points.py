@@ -37,7 +37,15 @@ class Points(commands.Cog):
     @commands.has_permissions(administrator=True)
     async def give(self, ctx, amount: int, *members: discord.Member):
         for member in members:
-            change_points(member.id, amount)
+            change_points(member.id, abs(amount))
+
+        await ctx.message.add_reaction('✅')
+
+    @commands.command()
+    @commands.has_permissions(administrator=True)
+    async def remove(self, ctx, amount: int, *members: discord.Member):
+        for member in members:
+            change_points(member.id, -abs(amount))
 
         await ctx.message.add_reaction('✅')
 
